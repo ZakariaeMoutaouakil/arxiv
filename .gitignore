@@ -1,0 +1,11 @@
+# Ignore everything
+*
+
+# But don't ignore the .gitignore file
+!.gitignore
+
+# Don't ignore the src directory
+!src/
+
+# Don't ignore anything in src/ or its subdirectories
+!src/**
