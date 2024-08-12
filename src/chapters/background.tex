@@ -29,7 +29,6 @@ Following the same conventions as in the previous section, we define the smoothe
 where $\epsilon \sim \mathcal{N}(0, \sigma^2 I)$ represents Gaussian noise with mean $0$ and covariance matrix $\sigma^2 I$.
 The final smoothed classifier is given by $\hat{F}_{out}(x) = \arg\max_{k \in \mathcal{Y}} \hat{F}_k(x)$.
 We can reinterpret this expectation as convolving $F$ with the Gaussian kernel $p_\sigma$; $\hat{F} = F * p_\sigma$, where
-
 \begin{align*}
     p_\sigma(z) \coloneqq \frac{1}{(2\pi\sigma^2)^{d/2}} \exp\left(-\frac{\|z\|^2}{2\sigma^2}\right).
 \end{align*}
@@ -51,4 +50,51 @@ In the context of randomized smoothing with Gaussian noise, the size of the pert
         \min \left\{ \epsilon > 0 \,|\, \exists \tau \in B_2(0,\epsilon),\, F_{out}(x + \tau) \neq y \right\} & \text{otherwise,}
     \end{cases}
 \end{align*}
+
 where $B_2(0,\epsilon)$ represents the $\ell_2$-ball centered at the origin with radius $\epsilon$.
+
+\subsection{Certified Radius and Lipschitz Constant}\label{subsec:certified-radius-and-lipschitz-constant}
+
+The concept of Lipschitz continuity provides an intuitive framework for understanding classifier robustness and its relation to the certified radius.
+
+A soft classifier $F: \mathcal{X} \rightarrow \Delta^{d-1}$ is Lipschitz continuous if there exists a constant $L \geq 0$ such that for all $x_1, x_2 \in \mathcal{X}$:
+\begin{align*}
+    \lVert F(x_1)- F(x_2) \rVert \leq L \cdot \lVert  x_1- x_2\rVert.
+\end{align*}
+Lipschitz continuity essentially bounds the maximum change in the output for a given change in the input, which means that a smaller Lipschitz constant indicates that the classifier's output is less sensitive to input perturbations.
+
+The following proposition highlights the relationship between Lipschitz continuity and a quantity named the prediction margin $M(f,x)$ (defined below) which quantifies how far the input is from the decision boundary of the classifier.
+A positive margin indicates correct classification, with larger values suggesting higher confidence, while a negative margin indicates misclassification:
+\[
+    M(F,x) \coloneqq F(x)_{y} - \max_{i \neq y}\{F(x)_i\}.
+\]
+\begin{proposition}
+    If the classifier $F$ is Lipschitz continuous with Lipschitz constant $L(F)$ and if $M(F,x)>\sqrt{2}L(F)r$, then for any adversarial example $x+\epsilon$ such that $\lVert \epsilon \rVert\leq r$, $M(F,x+\epsilon)>0$.
+\end{proposition}
+
+As a corollary of the proposition above, we can induce a certified radius that is proportional to the prediction margin:
+\[
+    R(F,x) \geq \frac{M(F,x)}{\sqrt{2}L(F)}
+\]
+
+Going back to randomized smoothing, we can demonstrate easily from the definition of the smoothed classifier $\hat{F}$ that its Lipschitz constant is less than $L(F)$.
+Moreover, if the simplex map $s$ is $1$-Lipschitz (like in the case of softmax or sparsemax), then $L(F)\leq L(f)$.
+As a result, we can write our first certified radius for a smoothed classifier as follows:
+\[
+    R_1(\hat{F},x) \coloneqq \frac{M(\hat{F},x)}{\sqrt{2}L(f)}
+\]
+
+\subsection{Certified Radius and Noise Magnitude}\label{subsec:certified-radius-and-noise-magnitude}
+In the discrete case, Cohen et al.
+proved a model-agnostic certifiably tight radius for randomized smoothing, meaning meaning there exist adversarial examples at distances arbitrarily close to the ball centered at $x$ with their radius.
+The method scales to large networks and high-dimensional data, as it only requires evaluating the base classifier on noisy samples.
+
+Formally, their certified radius is defined as:
+\[
+    R_2(\hat{F},x) \coloneqq \frac{\sigma}{2}M(\Phi^{-1}\circ\hat{F},x)=\frac{\sigma}{2}\Phi^{-1}(\hat{F}(x)_{y})-\Phi^{-1}(\max_{i \neq y}\{ (\hat{F}(x)_i) \}),
+\]
+where $\Phi$ is the Gaussian cumulative distribution function.
+The appearance of the Gaussian CDF ($\Phi$) in this formula is tied to the blurring effect of the decision boundary induced by the addition of Gaussian noise to the input.
+
+This guarantee is tight because it considers the worst-case scenario where all the probability mass of the runner-up class is concentrated at the point closest to the decision boundary.
+The scaling with $\sigma$ reflects that larger noise magnitudes provide larger certified radii at the cost of potentially reduced accuracy on unperturbed inputs, embodying a fundamental trade-off in randomized smoothing between robustness and clean accuracy.
