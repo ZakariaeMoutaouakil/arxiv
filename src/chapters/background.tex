@@ -1,0 +1,54 @@
+\section{Background \& Related Work}\label{sec:background-&-related-work}
+
+\subsection{Notation}\label{subsec:notation}
+Let $\mathcal{X}$ be a subset of the input space $\mathbb{R}^d$.
+We identify the set of labels $\mathcal{Y}$ with the set of integers $\{1, \ldots, m\}$, where $m$ is the number of classes.
+
+If $x$ is a data point in $\mathcal{X}$ and $y$ is its true label in $\mathcal{Y}$, then the prediction of a typical neural network classifier $F_{out}: \mathcal{X} \rightarrow \mathcal{Y}$ can be decomposed as $F_{out}(x)=\arg\max_{k \in \mathcal{Y}}s_k\circ f(x)$ where $g: \mathcal{X} \rightarrow \mathbb{R}^d$ is a subclassifier that outputs logits
+and $s: \mathbb{R}^d \rightarrow \Delta^{d-1}$ is the normalizing last layer that projects onto the $(d-1)$-dimensional probability simplex defined as:
+\[
+    \Delta^{d-1} \coloneqq \left\{p \in \mathbb{R}^d : \, p_i \geq 0, \,\sum_{i=1}^d p_i = 1 \right\}.
+\]
+
+We denote by $F\coloneqq s\circ f$ the classifier that outputs a probability distribution over the $m$ classes.
+We call $F$ the \textbf{soft classifier}, and $F_{out}$ the \textbf{hard classifier}.
+
+The simplex maps that are most commonly found in the literature are the softmax, the hardmax that is defined as the projection that puts all mass in the index of the maximum component (with ties broken arbitrarily), and the sparsemax that is defined as the Hilbert projection onto the convex closed set which is the $d-1$-dimensional probability simplex.
+
+We will call the case where we use the hardmax as a simplex map the \textbf{discrete case} and the case where we use a continuous simplex projection (like the softmax or the sparsemax) the \textbf{continuous case}.
+
+\subsection{Randomized Smoothing}\label{subsec:randomized-smoothing}
+Randomized smoothing is a technique designed to enhance the robustness of classifiers against small perturbations or adversarial attacks that stems from a simple intuition: if a classifier's decision is stable under small random perturbations of the input, it's likely to be more robust overall (this intuition will be made more rigorous using the concept of robustness radius).
+
+Following the same conventions as in the previous section, we define the smoothed classifier $\hat{F}: \mathcal{X} \rightarrow \Delta^{d-1}$ using randomized smoothing as implementing a majority vote over predictions of the soft classifier $F$ with noisy versions of the input:
+
+\begin{align*}
+    \hat{F}(x) \coloneqq \mathbb{E}_{\epsilon \sim \mathcal{N}(0, \sigma^2 I)} [F(x + \epsilon)],
+\end{align*}
+
+where $\epsilon \sim \mathcal{N}(0, \sigma^2 I)$ represents Gaussian noise with mean $0$ and covariance matrix $\sigma^2 I$.
+The final smoothed classifier is given by $\hat{F}_{out}(x) = \arg\max_{k \in \mathcal{Y}} \hat{F}_k(x)$.
+We can reinterpret this expectation as convolving $F$ with the Gaussian kernel $p_\sigma$; $\hat{F} = F * p_\sigma$, where
+
+\begin{align*}
+    p_\sigma(z) \coloneqq \frac{1}{(2\pi\sigma^2)^{d/2}} \exp\left(-\frac{\|z\|^2}{2\sigma^2}\right).
+\end{align*}
+
+\subsection{Robustness Radius}\label{subsec:robustness-radius}
+
+For a given classifier $F: \mathcal{X} \rightarrow \Delta^{d-1}$, we can quantify its decision confidence for a specific input $x$ using a metric called the certified radius, denoted as $R(F,x)$.
+This radius represents the maximum allowable perturbation $\epsilon$ that can be applied to the input $x$ while ensuring the classifier's output remains consistent with the true label $y$.
+
+The certified radius serves as an indicator of a classifier's resilience to input disturbances.
+A larger value of $R(F,x)$ suggests greater robustness against perturbations for that particular input.
+
+In the context of randomized smoothing with Gaussian noise, the size of the perturbation is usually measured using the $\ell_2$-norm, therefore we can formally define the certified radius as:
+
+\begin{align*}
+    R(F,x) \coloneqq
+    \begin{cases}
+        0 & \text{if } F_{out}(x) \neq y, \\[2ex]
+        \min \left\{ \epsilon > 0 \,|\, \exists \tau \in B_2(0,\epsilon),\, F_{out}(x + \tau) \neq y \right\} & \text{otherwise,}
+    \end{cases}
+\end{align*}
+where $B_2(0,\epsilon)$ represents the $\ell_2$-ball centered at the origin with radius $\epsilon$.
