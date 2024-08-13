@@ -65,9 +65,9 @@ Lipschitz continuity essentially bounds the maximum change in the output for a g
 
 The following proposition highlights the relationship between Lipschitz continuity and a quantity named the prediction margin $M(f,x)$ (defined below) which quantifies how far the input is from the decision boundary of the classifier.
 A positive margin indicates correct classification, with larger values suggesting higher confidence, while a negative margin indicates misclassification:
-\[
-    M(F,x) \coloneqq F(x)_{y} - \max_{i \neq y}\{F(x)_i\}.
-\]
+\begin{equation}
+    M(F,x) \coloneqq F(x)_{y} - \max_{i \neq y}\{F(x)_i\}.\label{eq:prediction-margin}
+\end{equation}
 \begin{proposition}
     If the classifier $F$ is Lipschitz continuous with Lipschitz constant $L(F)$ and if $M(F,x)>\sqrt{2}L(F)r$, then for any adversarial example $x+\epsilon$ such that $\lVert \epsilon \rVert\leq r$, $M(F,x+\epsilon)>0$.
 \end{proposition}
@@ -80,9 +80,9 @@ As a corollary of the proposition above, we can induce a certified radius that i
 Going back to randomized smoothing, we can demonstrate easily from the definition of the smoothed classifier $\hat{F}$ that its Lipschitz constant is less than $L(F)$.
 Moreover, if the simplex map $s$ is $1$-Lipschitz (like in the case of softmax or sparsemax), then $L(F)\leq L(f)$.
 As a result, we can write our first certified radius for a smoothed classifier as follows:
-\[
-    R_1(\hat{F},x) \coloneqq \frac{M(\hat{F},x)}{\sqrt{2}L(f)}
-\]
+\begin{equation}
+    R_1(\hat{F},x) \coloneqq \frac{M(\hat{F},x)}{\sqrt{2}L(f)}\label{eq:first-radius}
+\end{equation}
 
 \subsection{Certified Radius and Noise Magnitude}\label{subsec:certified-radius-and-noise-magnitude}
 In the discrete case, Cohen et al.
@@ -90,9 +90,9 @@ proved a model-agnostic certifiably tight radius for randomized smoothing, meani
 The method scales to large networks and high-dimensional data, as it only requires evaluating the base classifier on noisy samples.
 
 Formally, their certified radius is defined as:
-\[
-    R_2(\hat{F},x) \coloneqq \frac{\sigma}{2}M(\Phi^{-1}\circ\hat{F},x)=\frac{\sigma}{2}\Phi^{-1}(\hat{F}(x)_{y})-\Phi^{-1}(\max_{i \neq y}\{ (\hat{F}(x)_i) \}),
-\]
+\begin{equation}
+    R_2(\hat{F},x) \coloneqq \frac{\sigma}{2}M(\Phi^{-1}\circ\hat{F},x)=\frac{\sigma}{2}\left(\Phi^{-1}(\hat{F}(x)_{y})-\Phi^{-1}(\max_{i \neq y}\{ (\hat{F}(x)_i) \})\right),\label{eq:second-radius}
+\end{equation}
 where $\Phi$ is the Gaussian cumulative distribution function.
 The appearance of the Gaussian CDF ($\Phi$) in this formula is tied to the blurring effect of the decision boundary induced by the addition of Gaussian noise to the input.
 
