@@ -97,4 +97,6 @@ where $\Phi$ is the Gaussian cumulative distribution function.
 The appearance of the Gaussian CDF ($\Phi$) in this formula is tied to the blurring effect of the decision boundary induced by the addition of Gaussian noise to the input.
 
 This guarantee is tight because it considers the worst-case scenario where all the probability mass of the runner-up class is concentrated at the point closest to the decision boundary.
-The scaling with $\sigma$ reflects that larger noise magnitudes provide larger certified radii at the cost of potentially reduced accuracy on unperturbed inputs, embodying a fundamental trade-off in randomized smoothing between robustness and clean accuracy.
+It's worth noting that the noise magnitude $\sigma$ plays a crucial role in both cases.
+Larger $\sigma$ values tend to increase the certified radius of the smoothed classifier, potentially improving robustness.
+However, this comes at the cost of potentially reduced accuracy on clean (unperturbed) inputs, as the noise may cause misclassifications even in the absence of adversarial perturbations, embodying a fundamental trade-off in randomized smoothing between robustness and clean accuracy.

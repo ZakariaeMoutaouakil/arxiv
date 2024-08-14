@@ -9,17 +9,50 @@ To overcome this limitation, the classical approach is to use Monte Carlo method
 The Monte Carlo approach relies on the law of large numbers to approximate the true expectation.
 The process begins by generating a large number of independent Gaussian noise samples, typically in the order of thousands or tens of thousands.
 These noise samples are then added to the input $x$, creating a set of perturbed inputs.
-The base classifier $f$ is then evaluated on each of these perturbed inputs, producing a collection of outputs.
+The base classifier $F$ is then evaluated on each of these perturbed inputs, producing a collection of outputs.
 The key insight of the Monte Carlo method is that the empirical distribution of these outputs converges to the true distribution of the smoothed classifier's output as the number of samples increases.
 
-To obtain a concrete prediction from the smoothed classifier, we simply count the occurrences of each class in the outputs of the base classifier on the perturbed inputs.
-The class with the highest count is then selected as the prediction of the smoothed classifier.
-This approach effectively approximates the argmax operation over the class probabilities in the definition of the smoothed classifier.
-The accuracy of this approximation improves with the number of Monte Carlo samples, allowing for a trade-off between computational cost and precision.
+The exact procedure differs slightly depending on whether we are dealing with a discrete classifier (outputting class labels directly) or a continuous classifier (outputting logits or probabilities).
 
-Increasing the sample size improves the accuracy of the approximation and potentially resulting in larger certified radii.
-However, this comes at the cost of increased computational overhead.
-In practice, the number of samples is often chosen based on the specific requirements of the application, balancing the need for accuracy with computational constraints.
+In the discrete case, our base classifier $F$ outputs one-hot dimensional vectors that we can assimilate to class labels.
+To approximate the output of the smoothed classifier $\Hat{F}$, we generate a vector of counts $X = (X_1, \ldots, X_m)$ through a sampling process.
+This process begins by generating $n$ independent noise samples from a Gaussian distribution $\mathcal{N}(0, \sigma^2 I)$.
+We then evaluate the base classifier on each of these noisy inputs, producing a set of class labels.
+Finally, we count the occurrences of each class to form our vector $X$.
+
+This vector of counts $X$ can be interpreted as a sample from a multinomial distribution with parameters $n$ and $p = (p_1, \ldots, p_K)$, where $p_k = \mathbb{P}(f(x + \epsilon) = k)$.
+The probability vector $p$ is precisely what we aim to approximate, as it represents the output of the smoothed classifier.
+To obtain a concrete prediction, we simply select the class with the highest count: $\hat{F}_{out}(x) = \argmax_{k \in \{1, \ldots, m\}} X_k$.
+This approach effectively approximates the argmax operation over the class probabilities in the definition of the smoothed classifier.
+
+The law of large numbers ensures that as $n \rightarrow \infty$, the empirical probabilities $X_k / n$ converge to the true probabilities $p_k$, providing a consistent estimator of the smoothed classifier's output.
+Moreover, the multinomial nature of $X$ allows us to construct confidence intervals for the true probabilities $p_k$ using methods such as the Clopper-Pearson interval.
+These confidence intervals play a crucial role in certifying the robustness of the smoothed classifier, as they allow us to bound the probabilities of the top class and the runner-up with high confidence.
+
+In the continuous case, our base classifier $F: \mathbb{R}^d \rightarrow \Delta^{m-1}$ outputs a vector of probabilities for each class.
+Here, instead of a vector of counts, we produce a matrix $X \in \mathbb{R}^{n \times m}$ where each row represents the output of the base classifier for a single noisy sample.
+The process begins similarly to the discrete case, with the generation of $n$ independent noise samples.
+We then evaluate the base classifier on each noisy input, but instead of counting class labels, we store the full output vectors as rows of our matrix $X$.
+
+Each column of $X$ represents the varying confidence scores for a particular class label across the noisy samples.
+The column-wise means $\hat{p}_j = \frac{1}{n} \sum_{i=1}^n X_i^j$ provide an estimate of the expected confidence for each class under the noise distribution, effectively approximating the output of the smoothed classifier.
+This approach not only captures the central tendency of the classifier's behavior but also allows us to compute confidence intervals that account for the fluctuations in these scores.
+The final prediction is then determined by the class with the highest mean confidence: $\hat{F}_{out}(x) = \argmax_{k \in \{1, \ldots, m\}} \hat{p}_k$.
+By considering both the mean and the variability of these confidence scores, we can obtain a more nuanced understanding of the classifier's behavior under noise, which is crucial for both prediction and robustness certification.
+
+In this case, the central limit theorem ensures that $\bar{z}$ converges to a multivariate normal distribution as $n \rightarrow \infty$, centered at the true expected logits.
+This allows us to construct confidence intervals for the true expected logits and, consequently, for the probabilities of the smoothed classifier.
+The continuous case offers some advantages in terms of statistical efficiency, as it retains more information from each evaluation of the base classifier.
+However, it may be more computationally intensive, especially for large $m$, as it requires storing and manipulating the full matrix $Z$ rather than just a vector of counts.
+
+In both the discrete and continuous cases, the accuracy of the Monte Carlo approximation improves with the number of samples $n$, allowing for a trade-off between computational cost and precision.
+Larger $n$ provides tighter confidence intervals and more reliable predictions, but at the cost of increased computation time and memory usage.
+The choice between the discrete and continuous approaches may depend on the specific base classifier and the computational resources available.
+The discrete approach is often simpler to implement and may be more memory-efficient, especially for large $m$.
+The continuous approach, while potentially more statistically efficient, requires more storage and computation, particularly when dealing with logits.
+
+In practice, the choice of $n$ and $\sigma$ involves balancing multiple objectives: prediction accuracy, robustness guarantees, computational efficiency, and clean accuracy.
+These parameters may need to be tuned based on the specific requirements of the application and the characteristics of the dataset and base classifier.
 
 \subsection{Monte Carlo Approximation and Conservative Confidence Intervals}\label{subsec:monte-carlo-approximation-and-conservative-confidence-intervals}
 
@@ -49,7 +82,7 @@ Again, this represents a trade-off between the strength of the probabilistic gua
 
 When trying to estimate both certified radii, the heavy-lifting part of the calculation involves estimating the margin $M(\Hat{F},x)$.
 In practice, computing this margin exactly as defined can be computationally intensive, especially for classifiers with a large number of classes.
-However, a useful simplification can be made without compromising the conservative nature of robustness estimates.
+However, a useful simplification can be made without compromising the conservative nature of our robustness estimate.
 Instead of considering all classes other than the true class $y$, we can focus solely on the class with the second-highest confidence score, which can be determined empirically.
 
 Formally, if we denote the index of the class with the second-highest score as $j$, we can approximate the margin as:
@@ -60,8 +93,12 @@ This simplification is based on the observation that the class posing the greate
 By using only this \("\)runner-up\("\) class in our margin calculation, we ensure that our estimate of the certified radius remains conservative.
 This is because the maximum over all other classes will always be greater than or equal to the score of the second-highest class.
 
-The classical statistical approach to estimate the margin is to combine the Clopper-Pearson confidence interval and Bonferroni correction.
-This is done by applying a lower bound to the probability of the predicted class while simultaneously applying an upper bound to the probability of the runner-up class yields a conservative estimate of the classifier's robustness.
+The classical statistical approach to estimate the margin is to combine an exact one-sided interval confidence interval with Bonferroni correction.
+The use of exact intervals, rather than approximate ones, is crucial in this context.
+Exact intervals guarantee that the true probability is contained within the interval with at least the specified confidence level, regardless of the sample size or the true underlying probability.
+This property is particularly important when certifying robustness, as we need to ensure that our guarantees hold with high probability.
+Approximate intervals, such as those based on normal approximations, may underestimate the uncertainty for extreme probabilities or small sample sizes, potentially leading to overly optimistic robustness certificates.
+The exact interval is then used to get a lower bound to the probability of the predicted class while simultaneously applying an upper bound to the probability of the runner-up class to yield a conservative estimate of the classifier's robustness.
 
 Intuitively, the application of a lower bound to its probability effectively diminishes the perceived confidence of the classifier in its primary prediction.
 This deliberate underestimation of confidence creates a more stringent condition for establishing robustness guarantees.
@@ -75,7 +112,7 @@ The confluence of these two conservative estimates – the understatement of the
 This conservative framework ensures that any subsequent robustness guarantees derived from these estimates will remain valid even under these pessimistic assumptions.
 Consequently, this approach provides a highly reliable, albeit potentially overly cautious, assessment of the classifier's robustness.
 
-The Clopper-Pearson interval, also known as the exact binomial confidence interval, provides a conservative estimate of the true probability of an event given a number of observed successes in a fixed number of trials.
+In the discrete case, the Clopper-Pearson interval, also known as the exact binomial confidence interval, provides a conservative estimate of the true probability of an event given a number of observed successes in a fixed number of trials.
 In our context, we use this method to construct confidence intervals for the probabilities of the top class and the runner-up class.
 
 To account for the fact that we are estimating multiple probabilities simultaneously, we apply the Bonferroni correction.
@@ -96,7 +133,7 @@ Here, $\text{BetaInv}$ is the inverse of the cumulative distribution function of
 Consequently, we can use these bounds to compute a conservative estimate of the margin:
 
 \begin{equation}
-   \Hat{M}(\Hat{F},x)= \underline{p_A} - \overline{p_B}, \quad\tilde{M}(\Phi^{-1}\circ\Hat{F},x) = \Phi^{-1}(\underline{p_A}) - \Phi^{-1}(\overline{p_B})
+    \Hat{M}(\Hat{F},x)= \underline{p_A} - \overline{p_B}, \quad\tilde{M}(\Phi^{-1}\circ\Hat{F},x) = \Phi^{-1}(\underline{p_A}) - \Phi^{-1}(\overline{p_B})
 \end{equation}
 
 where $\Phi^{-1}$ is the inverse of the standard normal cumulative distribution function.
@@ -104,43 +141,79 @@ where $\Phi^{-1}$ is the inverse of the standard normal cumulative distribution 
 This conservative margin estimate can then be used to compute the certified radius, ensuring that our robustness guarantee holds with high probability.
 The use of these statistical techniques allows us to make strong claims about the robustness of our smoothed classifier, even when working with finite samples in a probabilistic setting.
 By consistently underestimating the true margin, we maintain the validity of our robustness certificates at the cost of potentially being overly conservative in some cases.
-\subsection{Trash}
-For the top class, we compute a lower bound on its probability.
-This lower bound represents a value that we can be confident (typically with 95\% or 99\% certainty) is below the true probability.
-By using this lower bound in our calculations, we ensure that we are not overestimating the classifier's confidence in its top prediction.
-Similarly, for all other classes, we compute upper bounds on their probabilities.
-These upper bounds represent values that we can be confident are above the true probabilities for these classes.
 
-The use of these one-sided confidence intervals in the computation of the certified radius leads to a conservative estimate.
-The resulting radius is guaranteed, with high probability, to be no larger than the true radius that would be obtained if we could compute the exact probabilities.
-This conservative approach ensures that the robustness guarantees hold even in the presence of sampling uncertainty.
+In the continuous case, to obtain a lower or an upper bound on the mean of a class probability, the corresponding column in the prediction matrix $X$ serves as a sample we can use to estimate the mean with an exact confidence interval.
+The classical approach to obtaining confidence intervals involves inverting concentration inequalities which describe how a random variable deviates from its expected value.
+These inequalities provide upper bounds on the probability that a random variable differs from its mean by more than a certain amount.
+Common examples include Markov's inequality, Chebyshev's inequality, and Hoeffding's inequality.
+To derive a confidence interval, statisticians invert these concentration inequalities.
 
-The specific method used to compute these confidence intervals is typically the Clopper-Pearson interval, also known as the exact binomial confidence interval.
-This method is chosen for its strong guarantees: it ensures that the confidence level is always at least the nominal level, regardless of the true underlying probability.
-While other methods might provide tighter intervals on average, the Clopper-Pearson interval's worst-case guarantees align well with the need for conservative bounds in adversarial robustness certification.
+This inversion essentially flips the perspective: instead of bounding the probability of deviation, we bound the range of possible values for the parameter of interest.
+The key idea is to express the probability statement in terms of the unknown parameter rather than the random variable.
+This inversion process typically involves algebraic manipulation of the inequality.
+We start with the concentration inequality, which gives us a probabilistic bound on the deviation of our estimator from the true parameter value.
+By rearranging this inequality, we can express it in terms of the parameter itself, creating a range of values that likely contains the true parameter with a specified level of confidence.
 
-It's important to note that the use of these conservative confidence intervals comes at a cost.
-By always using lower bounds for the top class and upper bounds for other classes, we are effectively reducing the gap between these probabilities.
-This reduction in the probability gap directly translates to a smaller certified radius.
-In other words, our conservative approach trades off some of the potential certified radius to gain statistical confidence in the robustness guarantee.
+The resulting confidence interval provides a range of plausible values for the unknown parameter, along with a measure of the uncertainty associated with the estimate.
+The width of this interval is influenced by factors such as the sample size, the variability in the data, and the desired level of confidence.
 
-The impact of this trade-off can be mitigated by increasing the number of Monte Carlo samples.
-As the sample size grows, the confidence intervals narrow, allowing for tighter bounds that more closely approximate the true probabilities.
-However, this comes at the cost of increased computational overhead.
-In practice, the choice of sample size becomes a balance between the desire for tight bounds (and thus larger certified radii) and the computational resources available.
+In randomized smoothing, the state-of-the-art approach uses a variance-adaptive concentration inequality to obtain confidence bounds.
+Other approaches have limitations, particularly in scenarios with low variance.
+For example, Hoeffding's inequality assumes the worst-case scenario for variance, which is 1/4 for bounded random variables in [0,1].
+This assumption can lead to overly wide confidence intervals when the actual variance is much smaller than this upper bound.
 
-
-In the context of the Cohen et al.
-certified radius, these confidence intervals are applied to the probabilities before they are transformed by the inverse Gaussian CDF. Specifically, if $\underline{p_A}$ is the lower bound on the probability of the top class, and $\overline{p_B}$ is the upper bound on the probability of the runner-up class, the conservative certified radius is computed as:
-
-\[
-    R = \frac{\sigma}{2}(\Phi^{-1}(\underline{p_A}) - \Phi^{-1}(\overline{p_B}))
-\]
-
-This formula encapsulates the conservative nature of the approach: by using $\underline{p_A}$ instead of the point estimate for the top class probability, and $\overline{p_B}$ instead of the point estimate for the runner-up, we ensure that the resulting radius is a valid lower bound on the true robust radius with high probability.
-
-In conclusion, the use of Monte Carlo methods to approximate the output of smoothed classifiers introduces a necessary element of uncertainty into the robustness certification process.
-By employing conservative, one-sided confidence intervals, we manage this uncertainty in a way that preserves the validity of the robustness guarantees, albeit at the cost of potentially smaller certified radii.
-This approach exemplifies the careful balance between theoretical guarantees and practical implementation that characterizes much of adversarial machine learning research.
-
-
+Unlike Hoeffding's, Bernstein's inequality takes into account the actual variance of the random variables.
+By incorporating this information, Bernstein's inequality can provide tighter bounds, especially in low-variance scenarios relative to their range.
+However, the standard Bernstein inequality still requires knowledge of the true variance or at least a good upper bound, which is often unknown in practical situations.
+This limitation led to the development of the empirical Bernstein inequality.
+This data-dependent version estimates the variance from the sample itself, rather than relying on a priori bounds or assumptions.
+\begin{proposition}[One-sided Empirical Bernstein Inequality]
+    Let $X_1, X_2, \ldots, X_n$ be independent random variables with values in $[a,b]$, and let $\bar{X}_n = \frac{1}{n}\sum_{i=1}^n X_i$ be their empirical mean. Define the empirical variance as
+    \[
+        V_n = \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{X}_n)^2.
+    \]
+    Then, for any $\delta \in (0,1)$ and $n \geq 2$, with probability at least $1-\delta$,
+    \[
+        \mathbb{E}[X] \leq \bar{X}_n + \sqrt{\frac{2V_n \ln(1/\delta)}{n}} + \frac{7(b-a)\ln(1/\delta)}{3(n-1)}.
+    \]
+\end{proposition}
+%\subsection{Trash}\label{subsec:trash}
+%For the top class, we compute a lower bound on its probability.
+%This lower bound represents a value that we can be confident (typically with 95\% or 99\% certainty) is below the true probability.
+%By using this lower bound in our calculations, we ensure that we are not overestimating the classifier's confidence in its top prediction.
+%Similarly, for all other classes, we compute upper bounds on their probabilities.
+%These upper bounds represent values that we can be confident are above the true probabilities for these classes.
+%
+%The use of these one-sided confidence intervals in the computation of the certified radius leads to a conservative estimate.
+%The resulting radius is guaranteed, with high probability, to be no larger than the true radius that would be obtained if we could compute the exact probabilities.
+%This conservative approach ensures that the robustness guarantees hold even in the presence of sampling uncertainty.
+%
+%The specific method used to compute these confidence intervals is typically the Clopper-Pearson interval, also known as the exact binomial confidence interval.
+%This method is chosen for its strong guarantees: it ensures that the confidence level is always at least the nominal level, regardless of the true underlying probability.
+%While other methods might provide tighter intervals on average, the Clopper-Pearson interval's worst-case guarantees align well with the need for conservative bounds in adversarial robustness certification.
+%
+%It's important to note that the use of these conservative confidence intervals comes at a cost.
+%By always using lower bounds for the top class and upper bounds for other classes, we are effectively reducing the gap between these probabilities.
+%This reduction in the probability gap directly translates to a smaller certified radius.
+%In other words, our conservative approach trades off some of the potential certified radius to gain statistical confidence in the robustness guarantee.
+%
+%The impact of this trade-off can be mitigated by increasing the number of Monte Carlo samples.
+%As the sample size grows, the confidence intervals narrow, allowing for tighter bounds that more closely approximate the true probabilities.
+%However, this comes at the cost of increased computational overhead.
+%In practice, the choice of sample size becomes a balance between the desire for tight bounds (and thus larger certified radii) and the computational resources available.
+%
+%
+%In the context of the Cohen et al.
+%certified radius, these confidence intervals are applied to the probabilities before they are transformed by the inverse Gaussian CDF. Specifically, if $\underline{p_A}$ is the lower bound on the probability of the top class, and $\overline{p_B}$ is the upper bound on the probability of the runner-up class, the conservative certified radius is computed as:
+%
+%\[
+%    R = \frac{\sigma}{2}(\Phi^{-1}(\underline{p_A}) - \Phi^{-1}(\overline{p_B}))
+%\]
+%
+%This formula encapsulates the conservative nature of the approach: by using $\underline{p_A}$ instead of the point estimate for the top class probability, and $\overline{p_B}$ instead of the point estimate for the runner-up, we ensure that the resulting radius is a valid lower bound on the true robust radius with high probability.
+%
+%In conclusion, the use of Monte Carlo methods to approximate the output of smoothed classifiers introduces a necessary element of uncertainty into the robustness certification process.
+%By employing conservative, one-sided confidence intervals, we manage this uncertainty in a way that preserves the validity of the robustness guarantees, albeit at the cost of potentially smaller certified radii.
+%This approach exemplifies the careful balance between theoretical guarantees and practical implementation that characterizes much of adversarial machine learning research.
+%
+%
