@@ -13,8 +13,5 @@
 # Don't ignore the out directory itself
 !out/
 
-# Ignore everything in out/
-out/*
-
 # But don't ignore main in out/
 !out/main
