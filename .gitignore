@@ -10,5 +10,11 @@
 # Don't ignore anything in src/ or its subdirectories
 !src/**
 
-# Don't ignore the PDF
-!out/main.pdf
+# Don't ignore the out directory itself
+!out/
+
+# Ignore everything in out/
+out/*
+
+# But don't ignore main in out/
+!out/main
