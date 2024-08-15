@@ -14,4 +14,4 @@
 !out/
 
 # But don't ignore main in out/
-!out/main
+!out/main.pdf
