@@ -1,0 +1,15 @@
+\section{Certified Radius Estimation in the Discrete Case}\label{sec:discrete}
+Following the same footsteps in , we have a vector of counts $X = (X_1, \ldots, X_m)$ that follows a multinomial distribution with parameters $n$ and $p = (p_1, \ldots, p_m)$, where $n$ is the number of samples (which is fixed for our purposes) and $p_k = \mathbb{P}(f(x + \epsilon) = k)$ are the sole unknown parameters.
+In general, we wish to estimate a lower confidence bound (the development for an upper confidence bound is identical) for a real-valued function $\theta\coloneqq g(p)$ of the multinomial parameter $p$.
+
+The maximum likelihood estimator (MLE) of $\theta$ is given by $\Hat{\theta}=g(\Hat{p})$ where $\Hat{p} = \frac{X}{n}=\left(\frac{X_1}{n}, \cdots, \frac{X_m}{n}\right)$ is the MLE of the parameter $p$.
+Denote by $\Tilde{\theta}$ the observed value of $\theta$ in our data, and by $\Pi(\cdot|p)$ the cumulative distribution function of $\Hat{\theta}$ given a multinomial parameter $p\in\Delta^{m-1}$.
+Define $\Theta\coloneqq g(\Delta^{m-1}_n)$ the set of all possible values that can be taken by $\Hat{\theta}$. For any $L\in\Theta$, define
+\[
+    \Pi(L)\coloneqq1-\inf_{\substack{p\in\Delta^{m-1}\\g(p)\leq L}}\Pi(\Tilde{\theta}|p).
+\]
+
+Finally, for a given confidence level $1-\alpha$, the lower bound on $\theta$ is given by
+\[
+    \underline{\Hat{\theta}} = \inf\left\{ L\in\Theta : \Pi(L) = \alpha \right\}.
+\]

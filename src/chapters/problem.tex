@@ -14,6 +14,7 @@ The key insight of the Monte Carlo method is that the empirical distribution of 
 
 The exact procedure differs slightly depending on whether we are dealing with a discrete classifier (outputting class labels directly) or a continuous classifier (outputting logits or probabilities).
 
+\subsubsection{Discrete Case}\label{subsubsec:discrete-case-monte-carlo-simulation}
 In the discrete case, our base classifier $F$ outputs one-hot dimensional vectors that we can assimilate to class labels.
 To approximate the output of the smoothed classifier $\Hat{F}$, we generate a vector of counts $X = (X_1, \ldots, X_m)$ through a sampling process.
 This process begins by generating $n$ independent noise samples from a Gaussian distribution $\mathcal{N}(0, \sigma^2 I)$.
@@ -29,6 +30,7 @@ The law of large numbers ensures that as $n \rightarrow \infty$, the empirical p
 Moreover, the multinomial nature of $X$ allows us to construct confidence intervals for the true probabilities $p_k$ using methods such as the Clopper-Pearson interval.
 These confidence intervals play a crucial role in certifying the robustness of the smoothed classifier, as they allow us to bound the probabilities of the top class and the runner-up with high confidence.
 
+\subsubsection{Continuous Case}\label{subsubsec:continuous-case-monte-carlo-simulation}
 In the continuous case, our base classifier $F: \mathbb{R}^d \rightarrow \Delta^{m-1}$ outputs a vector of probabilities for each class.
 Here, instead of a vector of counts, we produce a matrix $X \in \mathbb{R}^{n \times m}$ where each row represents the output of the base classifier for a single noisy sample.
 The process begins similarly to the discrete case, with the generation of $n$ independent noise samples.
@@ -80,7 +82,7 @@ Again, this represents a trade-off between the strength of the probabilistic gua
 
 \subsection{Practical Calculation of Confidence Interval}\label{subsec:practical-calculation-of-confidence-interval}
 
-When trying to estimate both certified radii, the heavy-lifting part of the calculation involves estimating the margin $M(\Hat{F},x)$.
+When trying to estimate both certified radii, the heavy-lifting part of the calculation involves estimating the margin $M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$.
 In practice, computing this margin exactly as defined can be computationally intensive, especially for classifiers with a large number of classes.
 However, a useful simplification can be made without compromising the conservative nature of our robustness estimate.
 Instead of considering all classes other than the true class $y$, we can focus solely on the class with the second-highest confidence score, which can be determined empirically.
@@ -96,11 +98,11 @@ This is because the maximum over all other classes will always be greater than o
 The classical statistical approach to estimate the margin is to combine an exact one-sided interval confidence interval with Bonferroni correction.
 The use of exact intervals, rather than approximate ones, is crucial in this context.
 Exact intervals guarantee that the true probability is contained within the interval with at least the specified confidence level, regardless of the sample size or the true underlying probability.
-This property is particularly important when certifying robustness, as we need to ensure that our guarantees hold with high probability.
+This property is particularly important when certifying robustness, as we need to ensure that our guarantee holds with high probability.
 Approximate intervals, such as those based on normal approximations, may underestimate the uncertainty for extreme probabilities or small sample sizes, potentially leading to overly optimistic robustness certificates.
 The exact interval is then used to get a lower bound to the probability of the predicted class while simultaneously applying an upper bound to the probability of the runner-up class to yield a conservative estimate of the classifier's robustness.
 
-Intuitively, the application of a lower bound to its probability effectively diminishes the perceived confidence of the classifier in its primary prediction.
+Intuitively, the application of a lower bound to the highest probability effectively diminishes the perceived confidence of the classifier in its primary prediction.
 This deliberate underestimation of confidence creates a more stringent condition for establishing robustness guarantees.
 It simulates a scenario where the classifier operates under suboptimal conditions, thereby testing its resilience in a more challenging environment than may actually exist.
 
@@ -112,6 +114,7 @@ The confluence of these two conservative estimates – the understatement of the
 This conservative framework ensures that any subsequent robustness guarantees derived from these estimates will remain valid even under these pessimistic assumptions.
 Consequently, this approach provides a highly reliable, albeit potentially overly cautious, assessment of the classifier's robustness.
 
+\subsubsection{Discrete Case}\label{subsubsec:discrete-case}
 In the discrete case, the Clopper-Pearson interval, also known as the exact binomial confidence interval, provides a conservative estimate of the true probability of an event given a number of observed successes in a fixed number of trials.
 In our context, we use this method to construct confidence intervals for the probabilities of the top class and the runner-up class.
 
@@ -142,11 +145,12 @@ This conservative margin estimate can then be used to compute the certified radi
 The use of these statistical techniques allows us to make strong claims about the robustness of our smoothed classifier, even when working with finite samples in a probabilistic setting.
 By consistently underestimating the true margin, we maintain the validity of our robustness certificates at the cost of potentially being overly conservative in some cases.
 
+\subsubsection{Continuous Case}\label{subsubsec:continuous-case}
 In the continuous case, to obtain a lower or an upper bound on the mean of a class probability, the corresponding column in the prediction matrix $X$ serves as a sample we can use to estimate the mean with an exact confidence interval.
 The classical approach to obtaining confidence intervals involves inverting concentration inequalities which describe how a random variable deviates from its expected value.
 These inequalities provide upper bounds on the probability that a random variable differs from its mean by more than a certain amount.
 Common examples include Markov's inequality, Chebyshev's inequality, and Hoeffding's inequality.
-To derive a confidence interval, statisticians invert these concentration inequalities.
+To derive a confidence interval, we simply invert these concentration inequalities.
 
 This inversion essentially flips the perspective: instead of bounding the probability of deviation, we bound the range of possible values for the parameter of interest.
 The key idea is to express the probability statement in terms of the unknown parameter rather than the random variable.
@@ -158,8 +162,8 @@ The resulting confidence interval provides a range of plausible values for the u
 The width of this interval is influenced by factors such as the sample size, the variability in the data, and the desired level of confidence.
 
 In randomized smoothing, the state-of-the-art approach uses a variance-adaptive concentration inequality to obtain confidence bounds.
-Other approaches have limitations, particularly in scenarios with low variance.
-For example, Hoeffding's inequality assumes the worst-case scenario for variance, which is 1/4 for bounded random variables in [0,1].
+Other variance-agnostic approaches have limitations, particularly in scenarios with low variance which are the scenarios that we are interested in, since well-trained classifiers (like neural networks trained using Gaussian data augmentation or adversarial training) have very low variance in their outputs for similar inputs.
+For example, Hoeffding's inequality assumes the worst-case scenario for variance, which is $1/4$ for a bounded random variable in $[0,1]$.
 This assumption can lead to overly wide confidence intervals when the actual variance is much smaller than this upper bound.
 
 Unlike Hoeffding's, Bernstein's inequality takes into account the actual variance of the random variables.
@@ -167,8 +171,9 @@ By incorporating this information, Bernstein's inequality can provide tighter bo
 However, the standard Bernstein inequality still requires knowledge of the true variance or at least a good upper bound, which is often unknown in practical situations.
 This limitation led to the development of the empirical Bernstein inequality.
 This data-dependent version estimates the variance from the sample itself, rather than relying on a priori bounds or assumptions.
-\begin{proposition}[One-sided Empirical Bernstein Inequality]
-    Let $X_1, X_2, \ldots, X_n$ be independent random variables with values in $[a,b]$, and let $\bar{X}_n = \frac{1}{n}\sum_{i=1}^n X_i$ be their empirical mean. Define the empirical variance as
+\begin{proposition}[Empirical Bernstein Inequality]
+    Let $X_1, X_2, \ldots, X_n$ be independent random variables with values in $[a,b]$, and let $\bar{X}_n = \frac{1}{n}\sum_{i=1}^n X_i$ be their empirical mean.
+    Define the empirical variance as
     \[
         V_n = \frac{1}{n-1} \sum_{i=1}^n (X_i - \bar{X}_n)^2.
     \]
