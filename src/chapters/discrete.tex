@@ -3,13 +3,51 @@ Following the same footsteps in , we have a vector of counts $X = (X_1, \ldots, 
 In general, we wish to estimate a lower confidence bound (the development for an upper confidence bound is identical) for a real-valued function $\theta\coloneqq g(p)$ of the multinomial parameter $p$.
 
 The maximum likelihood estimator (MLE) of $\theta$ is given by $\Hat{\theta}=g(\Hat{p})$ where $\Hat{p} = \frac{X}{n}=\left(\frac{X_1}{n}, \cdots, \frac{X_m}{n}\right)$ is the MLE of the parameter $p$.
-Denote by $\Tilde{\theta}$ the observed value of $\theta$ in our data, and by $\Pi(\cdot|p)$ the cumulative distribution function of $\Hat{\theta}$ given a multinomial parameter $p\in\Delta^{m-1}$.
-Define $\Theta\coloneqq g(\Delta^{m-1}_n)$ the set of all possible values that can be taken by $\Hat{\theta}$. For any $L\in\Theta$, define
+Define $\Theta\coloneqq g(\Delta^{m-1})$ (respectively $\Hat{\Theta}\coloneqq g(\Delta^{m-1}_n)$) the set of all possible values that can be taken by $\theta$ (respectively $\Hat{\theta}$).
+Denote by $\Tilde{\theta}\in\Hat{\Theta}$ the observed value of $\theta$ in our data, and by $\Pi(\cdot|p)$ the cumulative distribution function (CDF) of $\Hat{\theta}$ given a multinomial parameter $p\in\Delta^{m-1}$.
+For any $L\in\Theta$, define
+\begin{equation}
+    \Pi(L)\coloneqq1-\inf_{\substack{p\in\Delta^{m-1}\\g(p)\leq L}}\Pi(\Tilde{\theta}|p).\label{eq:Pi}
+\end{equation}
+
+Finally, for a given confidence level $1-\alpha$, the lower confidence bound on $\theta$ is given by
+\begin{equation}
+    \underline{\Hat{\theta}} = \inf\left\{ L\in\Theta : \Pi(L) = \alpha \right\}.\label{eq:lower-confidence-bound}
+\end{equation}
+Therefore, to compute the lower confidence bound $\underline{\Hat{\theta}}$, we need to solve two optimization problems in the equations~\eqref{eq:Pi} and~\eqref{eq:lower-confidence-bound}.
+Starting by the easy one, suppose we can compute $\Pi(L)$ for any $L\in\Theta$, it is clear that the function $\Pi$ is nonincreasing in $L$, which means that we can find $\underline{\Hat{\theta}}$ by binary search.
+
+Computing $\Pi(L)$ demands that we solve the following optimization problem:
+\begin{equation}
+    \inf_{\substack{p\in\Delta^{m-1}g(p)\leq L}}\Pi(\Tilde{\theta}|p).\label{eq:Pi-optimization}
+\end{equation}
+
+Denote by $\Omega^{m-1}_n\coloneqq\{x\in\mathbb{R}^m : x_i\geq0,\sum_{i=1}^m x_i = n\}$ the sample space of the multinomial distribution.
+For any $p\in\Delta^{m-1}$ and $x\in\Omega^{m-1}_n$, we write
 \[
-    \Pi(L)\coloneqq1-\inf_{\substack{p\in\Delta^{m-1}\\g(p)\leq L}}\Pi(\Tilde{\theta}|p).
+    \binom{n}{x}\coloneqq\binom{n}{x_1}\cdots\binom{n}{x_m},\quad p^x\coloneqq p_1^{x_1}\cdots p_m^{x_m}.
+\]
+Hence, we can explicitly write the CDF of $\Hat{\theta}$ as
+\[
+    \Pi(\Tilde{\theta}|p) = \sum_{\substack{x\in\Omega^{m-1}_n\\g\left(\frac{x}{n}\right)\leq\Tilde{\theta}}}\binom{n}{x}p^x.
 \]
 
-Finally, for a given confidence level $1-\alpha$, the lower bound on $\theta$ is given by
+Without loss of generality, we can assume that the two classes with highest probabilities are respectively classes $1$ and $2$ (i.e. $y=1$ and $j=2$).
+In the case of both margins, the function $g$ can be written as $g(p)=h(p_{1})-h(p_{2})$, where $h$ is the identity for the first margin, and $h=\Phi^{-1}$ for the second.
+For any $p\in\Delta^{m-1}$ such that $m\geq3$ (which we assume), we define the reduced multinomial parameter $q\in\Delta^2$ (which depends implicilty on $p$) by $q_1=p_1$, $q_2=p_2$ and $q_3=1-p_1-p_2$.
+Then by a simple manipulation, the CDF of $\Hat{\theta}$ can be simplified to
 \[
-    \underline{\Hat{\theta}} = \inf\left\{ L\in\Theta : \Pi(L) = \alpha \right\}.
+    \Pi(\Tilde{\theta}|p)=\Pi(\Tilde{\theta}|q)= \sum_{\substack{x\in\Omega^{2}_n\\g\left(\frac{x}{n}\right)\leq\Tilde{\theta}}}\binom{n}{x}q^x.
 \]
+
+Whichever the function $g$ is, it is clear that $\Pi(\Tilde{\theta}|q)$ is a posynomial function in the parameter $q$.
+In the case of the first radius where the function $h$ is the identity, the function $g$ is a polynomial function.
+The optimization problem~\eqref{eq:Pi-optimization} is therefore a \textbf{signomial optimization problem}, a kind of optimization problems that is extensively studied in the literature.
+Details on how to solve the signomial optimization problem can be found in Appendix~\ref{sec:signomial-optimization}.
+
+In the case of the second radius, the function $h$ (and thus $g$) is not a posynomial function, which means that the optimization problem~\eqref{eq:Pi-optimization} is not a priori a signomial optimization problem.
+Fortunately it can be transformed into one by using the taylor series expansion of $\Phi^{-1}$.
+Approximating $g$ only needs to be done inside the constraint of the problem~\eqref{eq:Pi-optimization}, leaving the expression of $\Pi(\Tilde{\theta}|p)$ exact.
+
+%The set $\Hat{\Theta}$ is equal to $\Hat{\Theta}=\left\{ \frac{k}{n}, k\in\llbracket -n, n \rrbracket \right\}$.
+%Thus, we can write $\Tilde{\theta} = \frac{k}{n}$ for some $k\in\llbracket -n, n \rrbracket$.
