@@ -1,3 +1,51 @@
 \section{Certified Radius Estimation in the Discrete Case}\label{sec:continuous}
 
-\subsection{}
+\subsection{Estimating By Betting}\label{subsec:estimating-by-betting}
+In , Ramdas et al introduced a novel approach to obtain confidence intervals with exact coverage for the mean of a bounded random variable.
+Their method is based on creating confidence sequences which are stronger than confidence intervals in the sense that while a confidence interval provides a range estimate for a parameter at a fixed sample size, a confidence sequence offers a sequence of intervals that are valid at any stopping time, providing continuous monitoring capabilities.
+Their new method shows significant improvements over past works including empirical Bernstein inequality in terms of interval width.
+
+Full details about their work is outside the scope of this report.
+The interested reader is encouraged to consult the original paper to learn more about their method.
+But for summary, the intuition behind the new method is rooted in a betting framework.
+The approach can be conceptualized as a game between a statistician and nature.
+For each potential mean value $m$ in the interval $[0,1]$, a separate game is established.
+The statistician's strategy involves making bets on future observations, with the goal of accumulating wealth if the true mean differs from $m$.
+The confidence set at any time $t$ consists of all values $m$ for which the statistician's wealth has not exceeded a certain threshold (specifically, $1/\alpha$ for a $1-\alpha$ confidence level).
+
+The authors frame this approach within the context of supermartingale theory, connecting it to existing work in nonparametric concentration and estimation.
+They also provide a plethora of betting strategies that range from simple to implement but overly conservative strategies to tight but inefficient ones.
+
+For the intents of this report, we will use the simplest confidence sequence mentioned in their paper, namely, the following, as we leave the exploration of tighter confidence sequences for future work.
+\begin{proposition}
+    Suppose $(X_t)_{t=1}^\infty \sim P$ for some $P \in \mathcal{P}$. For any $(0,1)$-valued predictable $(\lambda_t)_{t=1}^\infty$,
+    \[
+        C_t^{\text{PrPI-EB}} \coloneqq \left( \frac{\sum_{i=1}^t \lambda_i X_i}{\sum_{i=1}^t \lambda_i}\pm \sqrt{\frac{2\log(2/\alpha) + \sum_{i=1}^t v_i \psi_e (\lambda_i)}{\sum_{i=1}^t \lambda_i}} \right)
+    \]
+    forms a $(1-\alpha)$-CS for $\mu$, as does its running intersection, $\bigcap_{i \leq t} C_i^{\text{PrPI-EB}}$.
+
+    In particular, we recommend the predictable plug-in $(\lambda_t^{\text{PrPI-EB}})_{t=1}^\infty$ given by
+    \[
+        \lambda_t^{\text{PrPI-EB}} \coloneqq \sqrt{\frac{2\log(2/\alpha)}{\hat{\sigma}_{t-1}^2 \log(1 + t)}} \wedge 1, \quad \hat{\sigma}_t^2 \coloneqq \frac{1}{4} + \frac{\sum_{i=1}^t (X_i - \hat{\mu}_i)^2}{t + 1}, \quad \hat{\mu}_t \coloneqq \frac{1}{2} + \frac{\sum_{i=1}^t X_i}{t + 1}
+    \]
+    where $(15)$
+\end{proposition}
+
+While the first article only showed empirically the improvements in terms of interval width over existing work, Ramdas et al later proved in that the asymptotic width of their confidence sequence not only is tighter than empirical Bernstein's, but also achieves the width of the theoretical Bernstein's inequality in both the first-order and second-order limiting terms.
+Formally, the width of the (one-sided) theoretical Bernstein's inequality, which we consider to be the gold standard, is given by
+\[
+    w_n^{(TB)} = \sigma \sqrt{\frac{2\log(2/\alpha)}{n}} + \frac{2\log(1/\alpha)}{3n}.
+\]
+The width of the empirical Bernstein's inequality is given by
+\[
+    w_n^{(EB)} = \sigma \sqrt{\frac{2\log(2/\alpha)}{n}} + \frac{7\log(2/\alpha)}{3(n-1)}.
+\]
+Ramdas et al also proved that the width of their confidence sequence matches that of the theoretical Bernstein's inequality at least up to the second-order limiting term:
+\[
+    w_n^{\text{PrPI-EB}} = \sigma \sqrt{\frac{2\log(2/\alpha)}{n}} + \frac{2\log(1/\alpha)}{3n}+{o}\left( \frac{1}{n} \right).
+\]
+
+\subsection{First Radius Estimation}\label{subsec:first-radius-estimation-continuous}
+
+\subsection{Second Radius Estimation}\label{subsec:second-radius-estimation-continuous}
+
