@@ -1,25 +1,17 @@
 \section{Certified Radius Estimation in the Discrete Case}\label{sec:discrete}
-Following the same footsteps in , we have a vector of counts $X = (X_1, \ldots, X_m)$ that follows a multinomial distribution with parameters $n$ and $p = (p_1, \ldots, p_m)$, where $n$ is the number of samples (which is fixed for our purposes) and $p_k = \mathbb{P}(f(x + \epsilon) = k)$ are the sole unknown parameters.
-In general, we wish to estimate a lower confidence bound (the development for an upper confidence bound is identical) for a real-valued function $\theta\coloneqq g(p)$ of the multinomial parameter $p$.
 
-The maximum likelihood estimator (MLE) of $\theta$ is given by $\Hat{\theta}=g(\Hat{p})$ where $\Hat{p} = \frac{X}{n}=\left(\frac{X_1}{n}, \cdots, \frac{X_m}{n}\right)$ is the MLE of the parameter $p$.
-Define $\Theta\coloneqq g(\Delta^{m-1})$ (respectively $\Hat{\Theta}\coloneqq g(\Delta^{m-1}_n)$) the set of all possible values that can be taken by $\theta$ (respectively $\Hat{\theta}$).
+\subsection{Definitions and Notations}
+Following the same footsteps in , we have a vector of counts $X = (X_1, \ldots, X_m)$ that follows a multinomial distribution with parameters $n$ and $p = (p_1, \ldots, p_m)$, where $n$ is the number of samples (which is fixed for our purposes) and $p_k = \mathbb{P}(f(x + \epsilon) = k)$ are the sole unknown parameters.
+In general, we wish to estimate a lower confidence bound (the development for an upper confidence bound is identical but uninteresting for our intents given the reasons we layed out in the previous section) for a real-valued function $\theta\coloneqq g(p)$ of the multinomial parameter $p$.
+We assume that the multinomial parameter $p$ lives in a constraint space denoted as $\chi^{m-1}$ which is a subset of $\Delta^{m-1}$.
+We also denote by $\chi^{m-1}_n\coloneqq\chi^{m-1}\cap\Delta^{m-1}_n$ the discrete constraint space, i.e. the values that can taken empirically by $p$ given $n$ trials.
+
+The maximum likelihood estimator (MLE) of $\theta$ is given by $\Hat{\theta}=g(\Hat{p})$ where $\Hat{p} = \frac{X}{n}=\left(\frac{X_1}{n}, \cdots, \frac{X_m}{n}\right)$ is the MLE of the multinomial parameter $p$.
+Define $\Theta\coloneqq g(\chi^{m-1})$ (respectively $\Hat{\Theta}\coloneqq g(\chi^{m-1}_n)$) as the set of all possible values that can be taken by $\theta$ (respectively by $\Hat{\theta}$).
 Denote by $\Tilde{\theta}\in\Hat{\Theta}$ the observed value of $\theta$ in our data, and by $\Pi(\cdot|p)$ the cumulative distribution function (CDF) of $\Hat{\theta}$ given a multinomial parameter $p\in\Delta^{m-1}$.
 For any $L\in\Theta$, define
 \begin{equation}
     \Pi(L)\coloneqq1-\inf_{\substack{p\in\Delta^{m-1}\\g(p)\leq L}}\Pi(\Tilde{\theta}|p).\label{eq:Pi}
-\end{equation}
-
-Finally, for a given confidence level $1-\alpha$, the lower confidence bound on $\theta$ is given by
-\begin{equation}
-    \underline{\Hat{\theta}} = \inf\left\{ L\in\Theta : \Pi(L) = \alpha \right\}.\label{eq:lower-confidence-bound}
-\end{equation}
-Therefore, to compute the lower confidence bound $\underline{\Hat{\theta}}$, we need to solve two optimization problems in the equations~\eqref{eq:Pi} and~\eqref{eq:lower-confidence-bound}.
-Starting by the easy one, suppose we can compute $\Pi(L)$ for any $L\in\Theta$, it is clear that the function $\Pi$ is nonincreasing in $L$, which means that we can find $\underline{\Hat{\theta}}$ by binary search.
-
-Computing $\Pi(L)$ demands that we solve the following optimization problem:
-\begin{equation}
-    \inf_{\substack{p\in\Delta^{m-1}g(p)\leq L}}\Pi(\Tilde{\theta}|p).\label{eq:Pi-optimization}
 \end{equation}
 
 Denote by $\Omega^{m-1}_n\coloneqq\{x\in\mathbb{R}^m : x_i\geq0,\sum_{i=1}^m x_i = n\}$ the sample space of the multinomial distribution.
@@ -32,22 +24,75 @@ Hence, we can explicitly write the CDF of $\Hat{\theta}$ as
     \Pi(\Tilde{\theta}|p) = \sum_{\substack{x\in\Omega^{m-1}_n\\g\left(\frac{x}{n}\right)\leq\Tilde{\theta}}}\binom{n}{x}p^x.
 \]
 
-Without loss of generality, we can assume that the two classes with highest probabilities are respectively classes $1$ and $2$ (i.e. $y=1$ and $j=2$).
-In the case of both margins, the function $g$ can be written as $g(p)=h(p_{1})-h(p_{2})$, where $h$ is the identity for the first margin, and $h=\Phi^{-1}$ for the second.
 For any $p\in\Delta^{m-1}$ such that $m\geq3$ (which we assume), we define the reduced multinomial parameter $q\in\Delta^2$ (which depends implicilty on $p$) by $q_1=p_1$, $q_2=p_2$ and $q_3=1-p_1-p_2$.
-Then by a simple manipulation, the CDF of $\Hat{\theta}$ can be simplified to
+It can be proven by simple algebraic manipulations that if the function $g$ depends only on the parameters $p_1$ and $p_2$, then the CDF of $\Hat{\theta}$ can be simplified to
 \[
     \Pi(\Tilde{\theta}|p)=\Pi(\Tilde{\theta}|q)= \sum_{\substack{x\in\Omega^{2}_n\\g\left(\frac{x}{n}\right)\leq\Tilde{\theta}}}\binom{n}{x}q^x.
 \]
+It is also worth noting that $\Pi(\Tilde{\theta}|q)$ is a posynomial function in the parameter $q$, a fact that we will use later.
+Finally, the quantity $\Pi(L)$ can be simplified to
+\[
+    \Pi(L) = 1 - \inf_{\substack{q\in\Delta^{2}\\g(q)\leq L}}\Pi(\Tilde{\theta}|q).
+\]
 
-Whichever the function $g$ is, it is clear that $\Pi(\Tilde{\theta}|q)$ is a posynomial function in the parameter $q$.
-In the case of the first radius where the function $h$ is the identity, the function $g$ is a polynomial function.
-The optimization problem~\eqref{eq:Pi-optimization} is therefore a \textbf{signomial optimization problem}, a kind of optimization problems that is extensively studied in the literature.
+\subsection{First Radius Estimation}\label{subsec:first-radius-estimation}
+In the case of the first radius, our constraint space $\chi^{m-1}$ is the entire simplex $\Delta^{m-1}$.
+Therefore, the discrete constraint set and the discrete simplex set coincide.
+The sets $\Theta$ and $\Hat{\Theta}$ are equal to $[ -1, 1 ]$ and $\{-\frac{n}{n},\frac{n-1}{n}, \dots,-\frac{1}{n},0,\frac{1}{n},\frac{2}{n},\dots,\frac{n}{n}\}$ respectively.
+The observed value $\Tilde{\theta}\in\Hat{\Theta}$ can be written as $\Tilde{\theta} = \frac{k}{n}$ for some $k\in\llbracket -n, n \rrbracket$.
+Without loss of generality, we can assume that the two classes with the highest probabilities are respectively classes $1$ and $2$ (i.e. $y=1$ and $j=2$).
+Hence, the CDF of $\Hat{\theta}$ can be rewritten as
+\[
+    \Pi(\Tilde{\theta}|p) =\Pi(\Tilde{\theta}|q)= \mathbb{P}(X_1 - X_2\leq k|q)=\sum_{x_2=0}^n\sum_{x_1=0}^{\min(k+x_2,n)}\binom{n}{x}q^x.
+\]
+For a given confidence level $1-\alpha$, the lower confidence bound on $\theta$ is given by
+\begin{equation}
+    \underline{\Hat{\theta}} = \inf\left\{ L\in\Theta : \Pi(L) = \alpha \right\}.\label{eq:lower-confidence-bound}
+\end{equation}
+Therefore, to compute the lower confidence bound $\underline{\Hat{\theta}}$, we need to solve two optimization problems in the equations~\eqref{eq:Pi} and~\eqref{eq:lower-confidence-bound}.
+Starting by the easy one, suppose we can compute $\Pi(L)$ for any $L\in\Theta$, it is clear that the function $\Pi$ is nondecreasing in $L$, which means that we can find $\underline{\Hat{\theta}}$ by binary search.
+
+Computing $\Pi(L)$ demands that we solve the following optimization problem:
+\begin{equation}
+    \inf_{\substack{q\in\Delta^{2}\\q_1-q_2\leq L}}\Pi(\Tilde{\theta}|q).\label{eq:Pi-optimization}
+\end{equation}
+
+This optimization problem~\eqref{eq:Pi-optimization} falls under the category of \textbf{signomial optimization problems}, a kind of optimization problems that are extensively studied in the literature.
 Details on how to solve the signomial optimization problem can be found in Appendix~\ref{sec:signomial-optimization}.
+Solving signomial problems can be time-consuming, that is why the next lemma can helpful in justifying suboptimal but faster methods in the first iterations of the binary search.
+\begin{lemma}
+    \label{lemma:suboptimal}
+    If there exists $q\in\Delta^{2}$ such that $q_1-q_2\leq L$ and $\Pi(\Tilde{\theta}|q)\leq 1-\alpha$, then $\underline{\Hat{\theta}} \leq L$.
+\end{lemma}
 
-In the case of the second radius, the function $h$ (and thus $g$) is not a posynomial function, which means that the optimization problem~\eqref{eq:Pi-optimization} is not a priori a signomial optimization problem.
-Fortunately it can be transformed into one by using the taylor series expansion of $\Phi^{-1}$.
-Approximating $g$ only needs to be done inside the constraint of the problem~\eqref{eq:Pi-optimization}, leaving the expression of $\Pi(\Tilde{\theta}|p)$ exact.
+It is worth noting that this lemma holds true for both first and second radii.
+The lemma above has the following implication: if we suboptimally solve the optimization problem~\eqref{eq:Pi-optimization} for a given $L\in\Theta$, and if we find a value that is less than $1-\alpha$, then the lower confidence bound we are looking for resides on the right side of $L$, which narrows down the search space to the left subspace of $L$.
+In the first iterations of the binary search, our candidate $L$ is likely to be far away from the optimal solution $\underline{\Hat{\theta}}$, which means that solutions of the optimization problem~\eqref{eq:signomial-optimization} are likely to correspond to values that are less $1-\alpha$, therefore we can get away with suboptimally solving the problem.
+In practice, bayesian optimization algorithms often work well and are reasonably fast for the problem~\eqref{eq:signomial-optimization}, and we implement an early stopping rule to stop optimizing further if we fall below $1-\alpha$.
 
-%The set $\Hat{\Theta}$ is equal to $\Hat{\Theta}=\left\{ \frac{k}{n}, k\in\llbracket -n, n \rrbracket \right\}$.
-%Thus, we can write $\Tilde{\theta} = \frac{k}{n}$ for some $k\in\llbracket -n, n \rrbracket$.
+\subsection{Second Radius Estimation}\label{subsec:second-radius-estimation}
+In the same was as the last section, we need to solve the following optimization problem
+\begin{equation}
+    \inf_{\substack{q\in\Delta^{2}\\\Phi^{-1}(q_1)-\Phi^{-1}(q_2)\leq L}}\Pi(\Tilde{\theta}|q).\label{eq:non-signomial-optimization}
+\end{equation}
+
+Since $\Phi^{-1}$ is not a posynomial function, the optimization problem~\eqref{eq:non-signomial-optimization} cannot be classified as a signomial optimization problem, due to the non-signomial constraint $\Phi^{-1}(q_1)-\Phi^{-1}(q_2)\leq L$.
+To circumvent this problem, the following lemma shows that we can substitue the function $\Phi^{-1}$ with its taylor series approximation which is a polynomial (and in particular, a posynomial) function.
+\begin{lemma}
+    \label{lemma:approximation}
+    Let $\Phi^{-1}_M$ be the taylor series approximation of $\Phi^{-1}$ up to order $M$. If we assume that $p_1\geq1/2$, then
+    \[
+        M(\Phi^{-1}\circ\hat{F},x) \geq M(\Phi^{-1}_M\circ\hat{F},x)
+    \]
+\end{lemma}
+This lemma guarantees that replacing $\Phi^{-1}$ with its taylor series approximation preserves the conservativeness of the certified radius.
+The new margin has the advantage that the following optimization problem is a signomial optimization problem
+\begin{equation}
+    \inf_{\substack{q\in\Delta^{2}\\\Phi^{-1}_M(q_1)-\Phi^{-1}_M(q_2)\leq L}}\Pi(\Tilde{\theta}|q),\quad\text{ with }\quad\Pi(\Tilde{\theta}|q)= \sum_{\substack{x\in\Omega^{2}_n\\\Phi^{-1}_M\left(\frac{x_1}{n}\right)-\Phi^{-1}_M\left(\frac{x_2}{n}\right)\leq\Tilde{\theta}}}\binom{n}{x}q^x.\label{eq:approximated-signomial-optimization}
+\end{equation}
+
+In the same manner as before, in the first iterations of binary search we can suboptimally solve this optimization problem using techniques such as bayesian optimization.
+
+A disadvantage of the taylor series approximation is that the lemma assumes that $p_1\geq1/2$ to maintain the conservativeness of the certified radius. To get around this potentially untrue hypothesis, we can test it using the one-sided Clopper-Pearson interval.
+If the test succeeds, we proceed with the taylor series approximation.
+If not, as a fallback, we use the standard Clopper-Pearson interval with Bonferroni correction to estimate the certified radius.
