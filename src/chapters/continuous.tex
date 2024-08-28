@@ -46,6 +46,27 @@ Ramdas et al also proved that the width of their confidence sequence matches tha
 \]
 
 \subsection{First Radius Estimation}\label{subsec:first-radius-estimation-continuous}
+To recall the context from section~\ref{subsubsec:continuous-case}, to certify our smoothed classifier, we concatenate its predictions in the form of a $n \times m$ matrix $X$, such that $n$ is the number of inferences and $m$ is the number of classes.
+Each column of the matrix $X$ corresponds to a class label, and each row of the matrix $X$ corresponds to an inference.
+Following the same notations as in the last section, the first and second columns correspond respectively to the true label and the runner-up class.
+
+In the case of the first margin, the quantity we want to estimate is a lower confidence bound on the true mean of the differences between the two first columns of $X$, i.e $X^{1}-X^{2}$.
+For this reason, define $Z\coloneqq X^{1}-X^{2}$.
+There are two approaches to obtain a lower bound, with confidence level $1-\alpha$, on the mean of $Z$, denoted as $\Bar{Z}$.
+The first standard approach is to use Bonferroni correction alongside an exact one-sided confidence interval, meaning we use a one-sided confidence interval to obtain a lower bound on the mean of $X^1$ with level $\frac{\alpha}{2}$ and an upper confidence bound on the mean of $X^2$ with level $\frac{\alpha}{2}$.
+The lower confidence bound on $\Bar{Z}$ is then the difference of these two bounds.
+
+Our second approach is to estimate the lower confidence bound directly by first normalizing $Z$ to make sure its values are in the interval $[0,1]$, then we apply a one-sided confidence interval with level $\alpha$, which gives us directly the lower confidence bound.
 
 \subsection{Second Radius Estimation}\label{subsec:second-radius-estimation-continuous}
+In the case of the second margin, our vector of interest in $Z\coloneqq\Phi^{-1}(X^1)-\Phi^{-1}(X^2)$, where the function $\Phi^{-1}$ is applied element-wise on the coordinates of the vector.
+A main issue that stops us from carrying out the same procedure as in the previous section is the unboundedness of $\Phi^{-1}$, which implies that we cannot apply either Bernstein's inequality or the plug-in Bernstein's confidence sequence, as they both assume a bounded random variable.
+
+To get around this unboundedness problem, the standard approach is the same as before which is to estimate confidence bounds on both the mean of $X^1$ and $X^2$ with level $\frac{\alpha}{2}$, and then applying the function $\Phi^{-1}$ on each of these bounds and substracting them.
+
+Our approach, however, is more direct; we reuse our lemma, as it produces a conservative lower bound on the margin such that the function $\Phi^{-1}$ is replaced by its taylor series approximation which is on the contrary bounded on $[0,1]$.
+If we define $Z_M\coloneqq\Phi^{-1}_M(X^1)-\Phi^{-1}_M(X^2)$, then $Z_M$ is a bounded random variable.
+Thanks to the lemma, a lower confidence bound with level $\alpha$ on the vector $Z_M$ is also a lower confidence bound with level $\alpha$ on $Z$.
+Since our approximation is based on the supposition that $\Bar{X^1}\geq\frac{1}{2}$, we can split our procedure into two steps: first, we test our hypothesis at level $\frac{\alpha}{2}$, then we estimate the margin using the taylor series approximation if the test succeeds, else we fall back on the standard method based on Bonferroni correction.
+
 
