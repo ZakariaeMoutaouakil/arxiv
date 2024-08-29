@@ -1,0 +1,34 @@
+\section{Signomial Programming}\label{sec:signomial-programming}
+
+\subsection{Definitions}\label{subsec:definitions}
+In signomial programming, the building block is a \textbf{monomial} function which is a function of the form
+\[f(\mathbf{x}) = c x_1^{a_1} x_2^{a_2} \cdots x_m^{a_m}\]
+
+where:
+\begin{itemize}
+    \item $c > 0$ is a positive coefficient,
+    \item $\mathbf{x} = (x_1, x_2, \ldots, x_m)$ are positive variables,
+    \item $a_1, a_2, \ldots, a_m$ are real exponents (not necessarily non-negative).
+\end{itemize}
+Building on top of this definition, we can define two types of functions.
+A \textbf{posynomial} function is a sum of monomials, while a \textbf{signomial} function is a linear combination of monomials (meaning that the multiplicative coefficients can be negative).
+
+A signomial program (SP) is an optimization problem of the form:
+\[
+    \begin{aligned}
+        & \text{minimize}   & & f_0(\mathbf{x}) \\
+        & \text{subject to} & & f_i(\mathbf{x}) \geq 0, \quad i = 1, \ldots, p \\
+        &                   & & \mathbf{x} > 0
+    \end{aligned}
+\]
+where:
+
+\begin{itemize}
+    \item $\mathbf{x} = (x_1, \ldots, x_m)$ is the vector of optimization variables,
+    \item $f_0, f_1, \ldots, f_m$ are signomial functions.
+\end{itemize}
+
+Signomials programs generalize the well-known geometric programs that are much easier to solve, since they can be reduced to convex optimization problems.
+However, signomial programs are generally non-convex optimization problems and can be challenging to solve globally.
+Various techniques, such as successive convex approximation or branch-and-bound methods, are often employed to find solutions to SPs.
+

@@ -1,0 +1,60 @@
+\section{Proofs}\label{sec:proofs}
+
+\subsection{Proof of Lemma \ref{lemma:suboptimal}}\label{subsec:proof-of-lemma-ref{lemma:suboptimal}}
+\begin{proof}
+    Suppose there exists $q^0\in\Delta^{2}$ such that $q^0_1-q^0_2\leq L$ and $\Pi(\Tilde{\theta}|q^0)\leq 1-\alpha$ for some $L\in\Theta$.
+    It follows that
+    \[
+        \inf_{\substack{q\in\Delta^{2}\\q_1-q_2\leq L}}\Pi(\Tilde{\theta}|q)\leq\Pi(\Tilde{\theta}|q^0)\leq 1-\alpha.
+    \]
+    In other terms,
+    \[\alpha\leq\Pi(L).\]
+    Since $\Pi$ is nondecreasing, by definition of $\underline{\Hat{\theta}}$,
+    \[\Pi(\underline{\Hat{\theta}})\leq\alpha.\]
+    Therefore, $\Pi(\underline{\Hat{\theta}})\leq\Pi(L)$, which implies $\underline{\Hat{\theta}}\leq L$.
+\end{proof}
+
+\subsection{Proof of Lemma \ref{lemma:approximation}}\label{subsec:proof-of-lemma-ref{lemma:approximation}}
+\begin{proof}
+    To recall, the error function, denoted as $\text{erf}(x)$, is defined as
+
+    \[
+        \text{erf}(x) = \frac{2}{\sqrt{\pi}} \int_0^x e^{-t^2} dt.
+    \]
+
+    Its domain of the error function is the interval $(-\infty, \infty)$, and its codomain is the interval $(-1, 1)$.
+    The error function is an increasing and odd function.
+
+    The inverse error function, denoted as $\text{erf}^{-1}(z)$, is the inverse of the error function.
+    Its domain is the interval $(-1, 1)$, and its codomain is all real numbers.
+    Due to the complexity of the error function, the inverse error function does not have a simple closed-form expression.
+    However, it can be approximated using various methods.
+
+    One such approximation for the inverse error function is given by the following series:
+
+    \[
+        \text{erf}^{-1}(x) = \sum_{k=0}^{\infty} \frac{c_k}{2k+1} \left(\frac{\sqrt{\pi}}{2}x\right)^{2k+1}
+    \]
+
+    where $c_0 = 1$ and the subsequent coefficients $c_k$ are defined recursively as:
+
+    \[
+        c_k = \sum_{m=0}^{k-1} \frac{c_m c_{k-1-m}}{(m+1)(2m+1)}.
+    \]
+
+    This series approximation converges on the entire domain of the inverse error function.
+    If we denote by $\text{erf}_M$ the $M$-th order Taylor series of the error function,
+    \[
+        \text{erf}_M(x) \coloneqq \sum_{k=0}^M \frac{c_k}{2k+1} \left(\frac{\sqrt{\pi}}{2}x\right)^{2k+1},
+    \]
+    then it is clear that $\text{erf}(x) \geq\text{erf}_M(x)$ if $x\geq0$, and $\text{erf}(x) \leq\text{erf}_M(x)$ otherwise.
+
+    The Gaussian quantile function, denoted as $\Phi^{-1}$, can be expressed in terms of the inverse error function as follows
+    \[\Phi^{-1}(p) = \sqrt{2} \cdot \text{erf}^{-1}(2p - 1).\]
+
+    The domain of $\Phi^{-1}(p)$ is $(0, 1)$, corresponding to probabilities, while its codomain is $\mathbb{R}$.
+    The Taylor series approximation of $\text{erf}^{-1}(x)$ naturally leads to an approximation of the Gaussian quantile function.
+    By substituting $x = 2p - 1$ into the Taylor series for $\text{erf}^{-1}(x)$ and multiplying by $\sqrt{2}$, we obtain
+    \[\Phi^{-1}(p) \approx \sqrt{2} \sum_{k=0}^{M} \frac{c_k}{2k+1} \left(\frac{\sqrt{\pi}}{2}(2p-1)\right)^{2k+1}\coloneqq\Phi^{-1}_M(p)\]
+    It follows that if $p\geq\frac{1}{2}$, then $\Phi^{-1}(p) \geq\Phi^{-1}_M(p)$, and if $p\leq\frac{1}{2}$, then $\Phi^{-1}(p) \leq\Phi^{-1}_M(p)$, which concludes the proof.
+\end{proof}
