@@ -59,7 +59,28 @@ Computing $\Pi(L)$ demands that we solve the following optimization problem:
 
 This optimization problem~\eqref{eq:Pi-optimization} falls under the category of \textbf{signomial optimization problems}, a kind of optimization problems that are extensively studied in the literature.
 Details on how to solve the signomial optimization problem can be found in Appendix~\ref{sec:signomial-optimization}.
-Solving signomial problems can be time-consuming, that is why the next lemma can helpful in justifying suboptimal but faster methods in the first iterations of the binary search.
+The high-level algorithm for finding $\underline{\Hat{\theta}}$ is given in Algorithm~\ref{alg:first-margin-estimation}.
+\begin{algorithm}[h]
+    \DontPrintSemicolon % Removes semicolons at the end of lines
+    \KwIn{A vector of counts $X$, a tiny threshold $\epsilon>0$ and a routine \texttt{SolveSignomial(L)} that solves the signomial optimization problem~\eqref{eq:Pi-optimization} for any $L\in[-1,1]$}
+    \KwOut{The lower confidence bound $\underline{\Hat{\theta}}$ at confidence level $1-\alpha$}
+    Compute the observed value $\Tilde{\theta}\shortleftarrow\frac{X_1-X_2}{n}$\;
+    Set initial bounds: $\text{left}\shortleftarrow0$, $\text{right}\shortleftarrow\Tilde{\theta}$ \;
+    \While{$\text{right}-\text{left}<\epsilon$}{
+        $L\shortleftarrow\frac{\text{right}+\text{left}}{2}$\;
+        $\text{Solution}\shortleftarrow$ \texttt{SolveSignomial(L)}\;
+        \If{$\text{Solution}<1-\alpha$}{
+            $\text{right}\shortleftarrow L$\;
+        }
+        \Else{
+            $\text{left}\shortleftarrow L$\;
+        }
+    }
+    \KwRet{$\text{left}$}
+    \caption{First Margin Estimation in the Discrete Case}\label{alg:first-margin-estimation}
+\end{algorithm}
+
+Solving signomial problems can be time-consuming, this is the reason why the next lemma can helpful in justifying suboptimal but faster methods in the first iterations of the binary search.
 \begin{lemma}
     \label{lemma:suboptimal}
     If there exists $q\in\Delta^{2}$ such that $q_1-q_2\leq L$ and $\Pi(\Tilde{\theta}|q)\leq 1-\alpha$, then $\underline{\Hat{\theta}} \leq L$.
@@ -67,20 +88,47 @@ Solving signomial problems can be time-consuming, that is why the next lemma can
 
 It is worth noting that this lemma holds true for both first and second radii.
 The lemma above has the following implication: if we suboptimally solve the optimization problem~\eqref{eq:Pi-optimization} for a given $L\in\Theta$, and if we find a value that is less than $1-\alpha$, then the lower confidence bound we are looking for resides on the right side of $L$, which narrows down the search space to the left subspace of $L$.
-In the first iterations of the binary search, our candidate $L$ is likely to be far away from the optimal solution $\underline{\Hat{\theta}}$, which means that solutions of the optimization problem~\eqref{eq:signomial-optimization} are likely to correspond to values that are less $1-\alpha$, therefore we can get away with suboptimally solving the problem.
-In practice, bayesian optimization algorithms often work well and are reasonably fast for the problem~\eqref{eq:signomial-optimization}, and we implement an early stopping rule to stop optimizing further if we fall below $1-\alpha$.
+In the first iterations of the binary search, our candidate $L$ is likely to be far away from the optimal solution $\underline{\Hat{\theta}}$, which means that solutions of the optimization problem~\eqref{eq:Pi-optimization} are likely to correspond to values that are less $1-\alpha$, therefore we can get away with suboptimally solving the problem.
+In practice, bayesian optimization algorithms often work well and are reasonably fast for the problem~\eqref{eq:Pi-optimization}, and we implement an early stopping rule to stop optimizing further if we fall below $1-\alpha$.
+The final algorithm is summarized in Algorithm~\ref{alg:first-margin-estimation-fast}.
+\begin{algorithm}[h]
+    \DontPrintSemicolon % Removes semicolons at the end of lines
+    \KwIn{A vector of counts $X$, a tiny threshold $\epsilon>0$, a routine \texttt{SolveSignomial(L)} that solves the signomial optimization problem~\eqref{eq:Pi-optimization} for any $L\in[-1,1]$ and another routine \texttt{FastSolveSignomial(L)} that does the same thing but in a faster and possibly suboptimal way}
+    \KwOut{The lower confidence bound $\underline{\Hat{\theta}}$ at confidence level $1-\alpha$}
+    Compute the observed value $\Tilde{\theta}\shortleftarrow\frac{X_1-X_2}{n}$\;
+    Set initial bounds: $\text{left}\shortleftarrow0$, $\text{right}\shortleftarrow\Tilde{\theta}$, $\text{close}\shortleftarrow\text{False}$ \;
+    \While{$\text{right}-\text{left}<\epsilon$}{
+        $L\shortleftarrow\frac{\text{right}+\text{left}}{2}$\;
+        \If{$\text{close}$}{
+            $\text{Solution}\shortleftarrow$ \texttt{SolveSignomial(L)}\;
+        }
+        \Else{
+            $\text{Solution}\shortleftarrow$ \texttt{FastSolveSignomial(L)}\;
+        }
+        \If{$\text{Solution}<1-\alpha$}{
+            $\text{right}\shortleftarrow L$\;
+        }
+        \Else{
+            $\text{close}\shortleftarrow\text{True}$\;
+            $\text{left}\shortleftarrow L$\;
+        }
+    }
+    \KwRet{$\text{left}$}
+    \caption{First Margin Estimation in the Discrete Case (Fast Version)}\label{alg:first-margin-estimation-fast}
+\end{algorithm}
 
 \subsection{Second Radius Estimation}\label{subsec:second-radius-estimation}
-In the same was as the last section, we need to solve the following optimization problem
+In the same way as the last section, we need to solve the following optimization problem
 \begin{equation}
     \inf_{\substack{q\in\Delta^{2}\\\Phi^{-1}(q_1)-\Phi^{-1}(q_2)\leq L}}\Pi(\Tilde{\theta}|q).\label{eq:non-signomial-optimization}
 \end{equation}
 
-Since $\Phi^{-1}$ is not a posynomial function, the optimization problem~\eqref{eq:non-signomial-optimization} cannot be classified as a signomial optimization problem, due to the non-signomial constraint $\Phi^{-1}(q_1)-\Phi^{-1}(q_2)\leq L$.
+Since $\Phi^{-1}$ is not a posynomial nor a signomial function, the optimization problem~\eqref{eq:non-signomial-optimization} cannot be classified as a signomial optimization problem, due to the non-signomial constraint $\Phi^{-1}(q_1)-\Phi^{-1}(q_2)\leq L$.
 To circumvent this problem, the following lemma shows that we can substitue the function $\Phi^{-1}$ with its taylor series approximation which is a polynomial (and in particular, a posynomial) function.
 \begin{lemma}
     \label{lemma:approximation}
-    Let $\Phi^{-1}_M$ be the taylor series approximation of $\Phi^{-1}$ up to order $M$. If we assume that $p_1\geq1/2$, then
+    Let $\Phi^{-1}_M$ be the taylor series approximation of $\Phi^{-1}$ up to order $M$.
+    If we assume that $p_1\geq1/2$, then
     \[
         M(\Phi^{-1}\circ\hat{F},x) \geq M(\Phi^{-1}_M\circ\hat{F},x)
     \]
@@ -93,6 +141,23 @@ The new margin has the advantage that the following optimization problem is a si
 
 In the same manner as before, in the first iterations of binary search we can suboptimally solve this optimization problem using techniques such as bayesian optimization.
 
-A disadvantage of the taylor series approximation is that the lemma assumes that $p_1\geq1/2$ to maintain the conservativeness of the certified radius. To get around this potentially untrue hypothesis, we can test it using the one-sided Clopper-Pearson interval.
+A disadvantage of the taylor series approximation is that the lemma assumes that $p_1\geq1/2$ to maintain the conservativeness of the certified radius.
+To get around this potentially untrue hypothesis, we can test it using the one-sided Clopper-Pearson interval.
 If the test succeeds, we proceed with the taylor series approximation.
 If not, as a fallback, we use the standard Clopper-Pearson interval with Bonferroni correction to estimate the certified radius.
+This approach is summarized in Algorithm~\ref{alg:second-margin-estimation}.
+\begin{algorithm}[h]
+    \DontPrintSemicolon % Removes semicolons at the end of lines
+    \KwIn{A vector of counts $X$, a tiny threshold $\epsilon>0$, a routine \texttt{SolveSignomial(L)} that solves the signomial optimization problem~\eqref{eq:approximated-signomial-optimization} for any $L\in[-1,1]$ and another routine \texttt{FastSolveSignomial(L)} that does the same thing but in a faster and possibly suboptimal way}
+    \KwOut{The lower confidence bound $\underline{\Hat{\theta}}$ at confidence level $1-\alpha$}
+    Computer the lower confidence bound $\underline{p_1}$ using the one-sided Clopper-Pearson interval at level $\frac{\alpha}{2}$\;
+    \If{$p_1>\frac{1}{2}$}{
+        Compute the observed value $\Tilde{\theta}\shortleftarrow\Phi^{-1}\left(\frac{X_1}{n}\right)-\Phi^{-1}\left(\frac{X_2}{n}\right)$\;
+        Continue alongside Algorithm~\ref{alg:first-margin-estimation-fast} while replacing $\alpha$ with $\frac{\alpha}{2}$\;
+    }
+    \Else{
+        Compute the lower confidence bound using the standard Bonferonni algorithm (Algorithm~\ref{alg:bonferroni})\;
+    }
+%    \KwRet{$\text{left}$}
+    \caption{Second Margin Estimation in the Discrete Case}\label{alg:second-margin-estimation}
+\end{algorithm}

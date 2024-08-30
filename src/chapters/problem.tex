@@ -95,12 +95,24 @@ This simplification is based on the observation that the class posing the greate
 By using only this \("\)runner-up\("\) class in our margin calculation, we ensure that our estimate of the certified radius remains conservative.
 This is because the maximum over all other classes will always be greater than or equal to the score of the second-highest class.
 
-The classical statistical approach to estimate the margin is to combine an exact one-sided interval confidence interval with Bonferroni correction.
+The classical statistical approach to estimate the margin is to combine an exact one-sided interval confidence interval with Bonferroni correction and is outlined in Algorithm~\ref{alg:bonferroni}.
 The use of exact intervals, rather than approximate ones, is crucial in this context.
 Exact intervals guarantee that the true probability is contained within the interval with at least the specified confidence level, regardless of the sample size or the true underlying probability.
 This property is particularly important when certifying robustness, as we need to ensure that our guarantee holds with high probability.
 Approximate intervals, such as those based on normal approximations, may underestimate the uncertainty for extreme probabilities or small sample sizes, potentially leading to overly optimistic robustness certificates.
 The exact interval is then used to get a lower bound to the probability of the predicted class while simultaneously applying an upper bound to the probability of the runner-up class to yield a conservative estimate of the classifier's robustness.
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon % Removes semicolons at the end of lines
+    \KwIn{A vector of counts or a grid matrix $X$, and a routine \texttt{getConfidenceBound()} that can compute a lower/upper confidence bound at a given confidence level $1-\alpha$ (the arguments of the \texttt{getConfidenceBound()} routine are omitted for conciseness and generalization)}
+    \KwOut{The estimated margin $M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$}
+
+    Computer a lower confidence bound $\underline{\Hat{F}(x)}_{y}$ on the probability of the correct class $\Hat{F}(x)_{y}$ using the \texttt{getConfidenceBound()} routine at level $\frac{\alpha}{2}$\;
+    Compute an upper confidence bound $\overline{\Hat{F}(x)}_{j}$ on the probability of the second-highest class $\Hat{F}(x)_{y}$ using the \texttt{getConfidenceBound()} routine at level $\frac{\alpha}{2}$\;
+    Plug in the lower and upper confidence bounds to the margin $M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$\;
+    \KwRet{$M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$}
+    \caption{The Bonferroni approach to estimate the margin}\label{alg:bonferroni}
+\end{algorithm}
 
 Intuitively, the application of a lower bound to the highest probability effectively diminishes the perceived confidence of the classifier in its primary prediction.
 This deliberate underestimation of confidence creates a more stringent condition for establishing robustness guarantees.
