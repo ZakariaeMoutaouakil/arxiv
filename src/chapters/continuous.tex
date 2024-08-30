@@ -67,6 +67,6 @@ To get around this unboundedness problem, the standard approach is the same as b
 Our approach, however, is more direct; we reuse our lemma, as it produces a conservative lower bound on the margin such that the function $\Phi^{-1}$ is replaced by its taylor series approximation which is on the contrary bounded on $[0,1]$.
 If we define $Z_M\coloneqq\Phi^{-1}_M(X^1)-\Phi^{-1}_M(X^2)$, then $Z_M$ is a bounded random variable.
 Thanks to the lemma, a lower confidence bound with level $\alpha$ on the vector $Z_M$ is also a lower confidence bound with level $\alpha$ on $Z$.
-Since our approximation is based on the supposition that $\Bar{X^1}\geq\frac{1}{2}$, we can split our procedure into two steps: first, we test our hypothesis at level $\frac{\alpha}{2}$, then we estimate the margin using the taylor series approximation if the test succeeds, else we fall back on the standard method based on Bonferroni correction.
+Since our approximation is based on the supposition that $\Bar{X^1}\geq\frac{1}{2}$, we can split our procedure into two steps (like in Algorithm~\ref{alg:second-margin-estimation}): first, we test our hypothesis at level $\frac{\alpha}{2}$, then we estimate the margin using the taylor series approximation if the test succeeds, else we fall back on the standard method based on Bonferroni correction.
 
 

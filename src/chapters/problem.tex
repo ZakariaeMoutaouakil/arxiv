@@ -20,6 +20,21 @@ To approximate the output of the smoothed classifier $\Hat{F}$, we generate a ve
 This process begins by generating $n$ independent noise samples from a Gaussian distribution $\mathcal{N}(0, \sigma^2 I)$.
 We then evaluate the base classifier on each of these noisy inputs, producing a set of class labels.
 Finally, we count the occurrences of each class to form our vector $X$.
+The procedure is illustrated in Algorithm~\ref{alg:vector-of-counts}.
+\begin{algorithm}[h]
+    \DontPrintSemicolon % Removes semicolons at the end of lines
+    \KwIn{The base classifier $F$, the number of samples $n$, the standard deviation $\sigma$ and an input $x$}
+    \KwOut{The vector of counts $X = (X_1, \ldots, X_m)$}
+    Initialize $X = (0, \ldots, 0)$\;
+    \For{$i = 1$ \KwTo $n$}{
+        Generate noise $\epsilon_i \sim \mathcal{N}(0, \sigma^2 I)$\;
+        $\tilde{x}_i = x + \epsilon_i$\;
+        $y_i = F(\tilde{x}_i)$\;
+        Increment $X_{y_i}$ by 1\;
+    }
+    \KwRet{$X$}
+    \caption{Sampling in the Discrete Case}\label{alg:vector-of-counts}
+\end{algorithm}
 
 This vector of counts $X$ can be interpreted as a sample from a multinomial distribution with parameters $n$ and $p = (p_1, \ldots, p_K)$, where $p_k = \mathbb{P}(f(x + \epsilon) = k)$.
 The probability vector $p$ is precisely what we aim to approximate, as it represents the output of the smoothed classifier.
@@ -35,6 +50,21 @@ In the continuous case, our base classifier $F: \mathbb{R}^d \rightarrow \Delta^
 Here, instead of a vector of counts, we produce a matrix $X \in \mathbb{R}^{n \times m}$ where each row represents the output of the base classifier for a single noisy sample.
 The process begins similarly to the discrete case, with the generation of $n$ independent noise samples.
 We then evaluate the base classifier on each noisy input, but instead of counting class labels, we store the full output vectors as rows of our matrix $X$.
+Algorithm~\ref{alg:probability-matrix} explains the sampling process.
+\begin{algorithm}[h]
+    \DontPrintSemicolon
+    \KwIn{The base classifier $F: \mathbb{R}^d \rightarrow \Delta^{m-1}$, the number of samples $n$, the standard deviation $\sigma$ and an input $x$}
+    \KwOut{The grid matrix $X \in \mathbb{R}^{n \times m}$}
+    Initialize $X$ as an empty $n \times m$ matrix\;
+    \For{$i = 1$ \KwTo $n$}{
+        Generate noise $\epsilon_i \sim \mathcal{N}(0, \sigma^2 I)$\;
+        $\tilde{x}_i = x + \epsilon_i$\;
+        $y_i = F(\tilde{x}_i)$\;
+        Set the $i$-th row of $X$ to $y_i$\;
+    }
+    \KwRet{$X$}
+    \caption{Sampling in the Continuous Case}\label{alg:probability-matrix}
+\end{algorithm}
 
 Each column of $X$ represents the varying confidence scores for a particular class label across the noisy samples.
 The column-wise means $\hat{p}_j = \frac{1}{n} \sum_{i=1}^n X_i^j$ provide an estimate of the expected confidence for each class under the noise distribution, effectively approximating the output of the smoothed classifier.

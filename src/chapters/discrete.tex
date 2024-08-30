@@ -151,9 +151,9 @@ This approach is summarized in Algorithm~\ref{alg:second-margin-estimation}.
     \KwIn{A vector of counts $X$, a tiny threshold $\epsilon>0$, a routine \texttt{SolveSignomial(L)} that solves the signomial optimization problem~\eqref{eq:approximated-signomial-optimization} for any $L\in[-1,1]$ and another routine \texttt{FastSolveSignomial(L)} that does the same thing but in a faster and possibly suboptimal way}
     \KwOut{The lower confidence bound $\underline{\Hat{\theta}}$ at confidence level $1-\alpha$}
     Computer the lower confidence bound $\underline{p_1}$ using the one-sided Clopper-Pearson interval at level $\frac{\alpha}{2}$\;
-    \If{$p_1>\frac{1}{2}$}{
+    \If{$\underline{p_1}>\frac{1}{2}$}{
         Compute the observed value $\Tilde{\theta}\shortleftarrow\Phi^{-1}\left(\frac{X_1}{n}\right)-\Phi^{-1}\left(\frac{X_2}{n}\right)$\;
-        Continue alongside Algorithm~\ref{alg:first-margin-estimation-fast} while replacing $\alpha$ with $\frac{\alpha}{2}$\;
+        The rest is similar to Algorithm~\ref{alg:first-margin-estimation-fast} while replacing $\alpha$ with $\frac{\alpha}{2}$\;
     }
     \Else{
         Compute the lower confidence bound using the standard Bonferonni algorithm (Algorithm~\ref{alg:bonferroni})\;
