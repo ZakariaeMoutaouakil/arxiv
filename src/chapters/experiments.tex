@@ -1,0 +1,112 @@
+\section{Experiments}\label{sec:experiments}
+
+\subsection{Certified Test-set Accuracy}\label{subsec:certified-test-set-accuracy}
+In the context of adversarially robust classification, the concept of certified radius plays a crucial role.
+However, it is important to note that the certified radius is calculated only at a given point.
+This localized measure, while useful, does not provide a comprehensive understanding of a classifier's robustness across the entire input space.
+To address this limitation, we introduce a global measure for smoothed classifiers obtained through randomized smoothing: the \textit{certified test-set accuracy} (CTA).
+
+Let $g$ be a classifier, $S = \{(x_1, c_1), \ldots, (x_m, c_m)\}$ be a test set, and $r$ be a radius.
+We define an indicator function for each example $i \in [m]$:
+
+\[
+    z_i(r) = \mathbbm{1}[g(x_i + \delta) = c_i \quad \forall \|\delta\|_2 < r]
+\]
+
+The theoretical certified test-set accuracy at radius $r$ is then defined as:
+
+\[
+    \text{CertAcc}_{\text{theo}}(r) = \frac{1}{m} \sum_{i=1}^m z_i(r)
+\]
+
+This measure represents the fraction of the test set that $g$ classifies correctly with predictions that are certifiably robust within an $\ell_2$ ball of radius $r$.
+
+For randomized smoothing classifiers, computing the theoretical certified test-set accuracy exactly is not feasible.
+Instead, we introduce the approximate certified test-set accuracy.
+
+Let $Y_i(r)$ be a Bernoulli random variable denoting the event that, for example $i$, estimating the certified radius of the smoothed classifier returns a certified radius $R$ which is greater than $r$.
+The approximate certified test-set accuracy is then:
+
+
+\[
+    \text{CertAcc}_{\text{approx}}(r) = \frac{1}{m} \sum_{i=1}^m Y_i(r)
+\]
+
+Importantly, $Y_i(r) = 1$ does not necessarily imply $z_{i}(r) = 1$.
+However, if $z_i(r) = 0$, then $P(Y_i(r) = 1) \leq \alpha$.
+This relationship allows us to construct a one-sided confidence interval for the unobserved quantity $\frac{1}{m} \sum_{i=1}^m z_{i}(r)$ using the observed quantities $\sum_{i=1}^m Y_i(r)$ and $m$ (see Theorem ).
+
+\subsection{Results}\label{subsec:results}
+
+To compare our new radius estimation methods with the standard approaches, we run our experiments on the CIFAR-10 dataset.
+Results for the Imagenet dataset can be found in Appendix \ref{app:imagenet-results}.
+The failure rate $\alpha$ is chosen to be $0.001$ throughout all the experiments.
+The base classifier $F$ is the same 110-layer residual network from Cohen et al, trained using Gaussian noise data augmentation, such that the standard deviation $\sigma$ of the Gaussian noise used during training is the same one used when smoothing the base classifier.
+In all the figures, we compare the margins instead of the radii since they are directly proportional, and we use them interchangeably in our analysis.
+
+Starting with the discrete case, there are two main hyperparameters that influence the shape of the CTA curve: the number of samples $n$ and the standard deviation $\sigma$.
+The easiest hyperparameter dependence to analyse is the number of samples $n$.
+As Figure~\ref{fig:discrete_num} shows, the standard Bonferroni approach is far more conservative when the number of samples is small, although as the sample size increases, the impact of this correction becomes less significant, and the two curves end up converging and overlapping as a natural consequence of improved statistical estimation, reduced conservatism in bounds, and diminished impact of discretization effects.
+It is also worth noting that the second margin takes much more samples to converge than the first one which is linear, and the differences are much more prononced at larger radii.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/discrete_num}
+    \caption{Caption for the figure.}
+    \label{fig:discrete_num}
+\end{figure}
+
+The second important hyperparameter is the standard deviation $\sigma$.
+As Figure~\ref{fig:discrete_sigma} shows, when the standard deviation increases, the CTA decreases as the classifier’s base accuracy decreases because the added noise makes the classification task harder, leading the model to make more errors on the noisy data.
+When the standard deviation is too high, even though the certified radius increases, the base accuracy decreases enough to reduce the overall certified test-set accuracy.
+Therefore, the differences between the two methods become more negligible as the standard deviation increases.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/discrete_sigma}
+    \caption{Caption for the figure.}
+    \label{fig:discrete_sigma}
+\end{figure}
+
+In the continuous case, in addition to the sample size and the standard deviation, another hyperparameter to consider is the \textit{temperature}.
+The simplex map $s$ used in the experiments is the tempered softmax function which is a generalization of the standard softmax function, introducing a temperature parameter to control the smoothness of the output distribution.
+Given a vector $\mathbf{x} = (x_1, \ldots, x_m)$ and a temperature parameter $T > 0$, the tempered softmax function $\sigma_T: \mathbb{R}^m \to \mathbb{R}^m$ is defined as:
+\[
+    \sigma_T(\mathbf{x})_i = \frac{\exp(x_i/T)}{\sum_{j=1}^n \exp(x_j/T)}
+\]
+for $i = 1, \ldots, m$.
+
+As $T \to 0^+$, the tempered softmax approaches a hard maximum (one-hot vector).
+As $T \to \infty$, the tempered softmax approaches a uniform distribution.
+When $T = 1$, it reduces to the standard softmax function.
+
+Figures~\ref{fig:cont_num} and~\ref{fig:cont_sigma} show the effect of increasing the number of samples $n$ and increasing the standard deviation $\sigma$ respectively.
+The effects of these hyperparameters are similar in both discrete and continuous case.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/cont_num}
+    \caption{Caption for the figure.}
+    \label{fig:cont_num}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/cont_sigma}
+    \caption{Caption for the figure.}
+    \label{fig:cont_sigma}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/cont_temp}
+    \caption{Caption for the figure.}
+    \label{fig:cont_temp}
+\end{figure}
+
+It is clear from Figure~\ref{fig:cont_temp} that increasing the temperature parameter $T$ reduces the discrepancies between the Bonferroni approach and our new method.
+Higher temperatures lead to softer decision boundaries.
+As the temperature increases, the output probabilities of the tempered softmax function become more uniform, regardless of the input values.
+This means that the function becomes less sensitive to differences in the input, causing different methods to produce more similar outputs.
+Hence, as the temperature rises, the tempered softmax function becomes less responsive to changes in its inputs.
+This means that larger changes in the input are required to produce the same change in output probabilities.
+Consequently, the differences between various methods become less pronounced.
+At lower temperatures, the tempered softmax accentuates differences between inputs.
+The highest value tends to dominate, resulting in an output distribution that's closer to a one-hot vector.

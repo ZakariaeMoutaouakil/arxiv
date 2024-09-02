@@ -24,6 +24,7 @@
 \usepackage{mathtools}
 \usepackage{stmaryrd}
 \usepackage[ruled,lined,linesnumbered,boxed]{algorithm2e}
+\usepackage{bbm}
 
 % Custom formatting to move the caption below the algorithm
 %\makeatletter
@@ -88,15 +89,7 @@
 \begin{document}
     \maketitle
 
-
-    \begin{abstract}
-        \lipsum[1]
-    \end{abstract}
-
-
-% keywords can be removed
-    \keywords{First keyword \and Second keyword \and More}
-
+    \input{chapters/abstract}
 
     \input{chapters/introduction}
 
@@ -108,14 +101,11 @@
 
     \input{chapters/continuous}
 
-%    \input{chapters/tutorial}
+    \input{chapters/experiments}
 
+    \input{chapters/conclusion}
 
-    \section{Conclusion and Future Work}
-    \lipsum[2]
-
-    \section*{Acknowledgments}
-    \lipsum[3]
+    \input{chapters/acknowledgments}
 
     \appendix
 
