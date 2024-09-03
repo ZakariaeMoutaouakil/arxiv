@@ -25,6 +25,9 @@
 \usepackage{stmaryrd}
 \usepackage[ruled,lined,linesnumbered,boxed]{algorithm2e}
 \usepackage{bbm}
+\usepackage{multirow}
+%\usepackage{natbib} % Added natbib package
+\usepackage[authoryear]{natbib}
 
 % Custom formatting to move the caption below the algorithm
 %\makeatletter
@@ -113,8 +116,11 @@
 
     \input{appendix/proof}
 
-%Bibliography
-    \bibliographystyle{unsrt}
+    \input{appendix/imagenet}
+
+    % Bibliography
+%    \bibliographystyle{plainnat} % Changed from unsrt to plainnat
+    \bibliographystyle{apalike}
     \bibliography{references}
 
 
