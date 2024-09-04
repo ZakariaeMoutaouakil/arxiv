@@ -72,10 +72,10 @@ This approach not only captures the central tendency of the classifier's behavio
 The final prediction is then determined by the class with the highest mean confidence: $\hat{F}_{out}(x) = \argmax_{k \in \{1, \ldots, m\}} \hat{p}_k$.
 By considering both the mean and the variability of these confidence scores, we can obtain a more nuanced understanding of the classifier's behavior under noise, which is crucial for both prediction and robustness certification.
 
-In this case, the central limit theorem ensures that $\bar{z}$ converges to a multivariate normal distribution as $n \rightarrow \infty$, centered at the true expected logits.
-This allows us to construct confidence intervals for the true expected logits and, consequently, for the probabilities of the smoothed classifier.
+In this case, the central limit theorem ensures that $\hat{p}$ converges to a multivariate normal distribution as $n \rightarrow \infty$, centered at the true expected logits.
+This allows us to construct confidence intervals for the output of the smoothed classifier.
 The continuous case offers some advantages in terms of statistical efficiency, as it retains more information from each evaluation of the base classifier.
-However, it may be more computationally intensive, especially for large $m$, as it requires storing and manipulating the full matrix $Z$ rather than just a vector of counts.
+However, it may be more computationally intensive, especially for large $m$, as it requires storing and manipulating the full matrix $X$ rather than just a vector of counts.
 
 In both the discrete and continuous cases, the accuracy of the Monte Carlo approximation improves with the number of samples $n$, allowing for a trade-off between computational cost and precision.
 Larger $n$ provides tighter confidence intervals and more reliable predictions, but at the cost of increased computation time and memory usage.
@@ -89,6 +89,10 @@ These parameters may need to be tuned based on the specific requirements of the 
 \subsection{Monte Carlo Approximation and Conservative Confidence Intervals}\label{subsec:monte-carlo-approximation-and-conservative-confidence-intervals}
 
 While the Monte Carlo methods offers a practical means of approximating the output of a smoothed classifier, it introduces an element of randomness into the evaluation process, a factor that must be carefully considered, especially when certifying the robustness of these classifiers, since the certified radius represents a guarantee of the classifier's stability under adversarial perturbations, and any uncertainty in its computation could potentially undermine this guarantee.
+
+This transformation of the smoothed classifier from a deterministic model to a stochastic one allows us to employ probabilistic reasoning about its outputs.
+We can conceptualize the outputs as random vectors, which enables the application of statistical analysis to assess and quantify the variability and confidence of the predictions.
+This stochastic framework necessitates a shift in how we evaluate the performance and reliability of the classifier, requiring metrics that can capture and articulate the probabilistic nature of the outputs.
 
 The biggest risk induced by the randomness in our Monte Carlo approximation is that our empirical estimate might overstate the true robustness of the classifier.
 If we were to naively use our empirical estimates without accounting for this risk, we might end up with an overly optimistic assessment of the classifier's robustness.
@@ -112,33 +116,27 @@ Again, this represents a trade-off between the strength of the probabilistic gua
 
 \subsection{Practical Calculation of Confidence Interval}\label{subsec:practical-calculation-of-confidence-interval}
 
-When trying to estimate both certified radii, the heavy-lifting part of the calculation involves estimating the margin $M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$.
-In practice, computing this margin exactly as defined can be computationally intensive, especially for classifiers with a large number of classes.
-However, a useful simplification can be made without compromising the conservative nature of our robustness estimate.
-Instead of considering all classes other than the true class $y$, we can focus solely on the class with the second-highest confidence score, which can be determined empirically.
-
-Formally, if we denote the index of the class with the second-highest score as $j$, we can approximate the margin as:
-\begin{align*}
-    M(\Hat{F},x) =\Hat{F}(x)_{y} - \Hat{F}(x)_j, \text{ and }M(\Phi^{-1}\circ\Hat{F},x) =\Phi^{-1}(\Hat{F}(x)_{y}) - \Phi^{-1}(\Hat{F}(x)_j).
-\end{align*}
-This simplification is based on the observation that the class posing the greatest threat to the current classification is the one with the next highest score after the predicted class.
-By using only this \("\)runner-up\("\) class in our margin calculation, we ensure that our estimate of the certified radius remains conservative.
-This is because the maximum over all other classes will always be greater than or equal to the score of the second-highest class.
+When trying to estimate both certified radii, the heavy-lifting part of the calculation involves estimating the (prediction) margin $M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$.
 
 The classical statistical approach to estimate the margin is to combine an exact one-sided interval confidence interval with Bonferroni correction and is outlined in Algorithm~\ref{alg:bonferroni}.
 The use of exact intervals, rather than approximate ones, is crucial in this context.
 Exact intervals guarantee that the true probability is contained within the interval with at least the specified confidence level, regardless of the sample size or the true underlying probability.
 This property is particularly important when certifying robustness, as we need to ensure that our guarantee holds with high probability.
 Approximate intervals, such as those based on normal approximations, may underestimate the uncertainty for extreme probabilities or small sample sizes, potentially leading to overly optimistic robustness certificates.
-The exact interval is then used to get a lower bound to the probability of the predicted class while simultaneously applying an upper bound to the probability of the runner-up class to yield a conservative estimate of the classifier's robustness.
+The exact interval is then used to get a lower bound to the probability of the predicted class while simultaneously applying an upper bound to the probability of all other classes to yield a conservative estimate of the classifier's robustness.
 
-\begin{algorithm}[H]
+To account for the fact that we are estimating multiple probabilities simultaneously, we apply the Bonferroni correction.
+This correction adjusts the significance level for each individual confidence interval to ensure that the overall probability of any interval not containing the true value remains below our chosen significance level.
+
+\begin{algorithm}[htbp]
     \DontPrintSemicolon % Removes semicolons at the end of lines
     \KwIn{A vector of counts or a grid matrix $X$, and a routine \texttt{getConfidenceBound()} that can compute a lower/upper confidence bound at a given confidence level $1-\alpha$ (the arguments of the \texttt{getConfidenceBound()} routine are omitted for conciseness and generalization)}
-    \KwOut{The estimated margin $M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$}
+    \KwOut{The estimated margin $M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$ with confidence level $1-\alpha$}
 
-    Computer a lower confidence bound $\underline{\Hat{F}(x)}_{y}$ on the probability of the correct class $\Hat{F}(x)_{y}$ using the \texttt{getConfidenceBound()} routine at level $\frac{\alpha}{2}$\;
-    Compute an upper confidence bound $\overline{\Hat{F}(x)}_{j}$ on the probability of the second-highest class $\Hat{F}(x)_{y}$ using the \texttt{getConfidenceBound()} routine at level $\frac{\alpha}{2}$\;
+    Computer a lower confidence bound $\underline{\Hat{F}(x)}_{y}$ on the output of the correct class $\Hat{F}(x)_{y}$ using the \texttt{getConfidenceBound()} routine at level $\frac{\alpha}{m}$\;
+    \For{all other classes $j$ other than $y$}{
+        Compute an upper confidence bound $\overline{\Hat{F}(x)}_{j}$ on the output of the class $j$ using the \texttt{getConfidenceBound()} routine at level $\frac{\alpha}{m}$\;
+    }
     Plug in the lower and upper confidence bounds to the margin $M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$\;
     \KwRet{$M(\Hat{F},x)$ or $M(\Phi^{-1}\circ\Hat{F},x)$}
     \caption{The Bonferroni approach to estimate the margin}\label{alg:bonferroni}
@@ -156,29 +154,67 @@ The confluence of these two conservative estimates – the understatement of the
 This conservative framework ensures that any subsequent robustness guarantees derived from these estimates will remain valid even under these pessimistic assumptions.
 Consequently, this approach provides a highly reliable, albeit potentially overly cautious, assessment of the classifier's robustness.
 
+As a last remark, it is worth explaining why Algorithm~\ref{alg:bonferroni} computes upper confidence bounds for all classes other than the predicted class, rather than just the second-highest class, due to an important nuance in how confidence bounds account for variance.
+When we calculate upper confidence bounds, we're not just considering the mean (expected) output of each class, but also the uncertainty or variance associated with that output.
+This means that a class with a lower mean output could potentially have a higher upper confidence bound if it has greater variance.
+For example, suppose we have three classes: A (predicted class), B, and C. While B might have a higher mean output than C, C could have much higher variance.
+When we compute the upper confidence bounds, C's bound might actually exceed B's, despite its lower mean, due to this higher variance.
+By considering all non-predicted classes, we ensure we capture the worst-case scenario across all possible competitors to the predicted class, not just the one that appears strongest on average.
+This approach provides a more robust and conservative estimate of the classifier's performance, accounting for potential fluctuations and uncertainties in the model's outputs.
+
 \subsubsection{Discrete Case}\label{subsubsec:discrete-case}
+In practice, computing this margin exactly as defined can be computationally intensive, especially for classifiers with a large number of classes.
+However, a useful simplification can be made without compromising the conservative nature of our robustness estimate.
+
+In the discrete case, where the classifier outputs class labels rather than continuous logits or probabilities, we encounter a fundamentally different scenario that justifies focusing solely on the class with the second-highest count.
+This simplification is valid and doesn't compromise the conservative nature of our robustness estimate for several reasons.
+
+First, in a discrete classification scenario, we're dealing with counts of occurrences rather than probability distributions.
+Each sample is categorically assigned to one class, and our confidence in a class is directly proportional to the number of times it was chosen.
+This discrete nature eliminates the concept of variance as we understand it in continuous distributions.
+
+When we're working with counts, the uncertainty doesn't manifest as variance within each class's score, but rather in the overall distribution of counts across classes.
+The class with the highest count is our predicted class, and the class with the second-highest count represents the strongest potential competitor.
+
+In this discrete setup, it's impossible for a class with fewer counts to suddenly ``overtake'' a class with more counts when we calculate confidence bounds.
+The ordering of classes by their counts is fixed and doesn't change regardless of how we calculate confidence intervals.
+This is in stark contrast to the continuous case, where a class with a lower mean but higher variance could potentially have a higher upper confidence bound.
+
+Moreover, in the discrete case, our confidence bounds are typically calculated using methods designed for count data, such as the binomial proportion confidence interval.
+These methods directly relate to the observed counts and don't introduce the possibility of rank swapping that we see in continuous distributions.
+
+The robustness of our classifier in this discrete case is essentially a measure of how convincingly the top class outperforms its nearest competitor.
+By focusing on the class with the second-highest count, we're always considering the worst-case scenario among the non-predicted classes.
+Any class with fewer counts than the second-highest will invariably have a lower upper confidence bound, making it less of a threat to our robustness estimate.
+
+This simplification to consider only the second-highest class is not just computationally efficient; it's also intuitively aligned with the discrete nature of the problem.
+We're essentially asking: ``How certain are we that our top choice is correct, given the performance of its strongest competitor?'' This pairwise comparison captures the essence of our robustness concern without needing to consider classes that performed even more poorly.
+
+The discrete nature of the classification outputs in this scenario fundamentally changes how we approach uncertainty and confidence.
+The absence of within-class variance, the fixed nature of the count-based ranking, and the direct relationship between counts and confidence bounds all contribute to making the focus on the second-highest class both valid and sufficient for a conservative robustness estimate.
+
+Formally, if we denote the index of the class with the second-highest score as $j$, we can approximate the margin as:
+\begin{align*}
+    M(\Hat{F},x) =\Hat{F}(x)_{y} - \Hat{F}(x)_j, \text{ and }M(\Phi^{-1}\circ\Hat{F},x) =\Phi^{-1}(\Hat{F}(x)_{y}) - \Phi^{-1}(\Hat{F}(x)_j).
+\end{align*}
+
+Thus, in Algorithm~\ref{alg:bonferroni}, we can replace $m$ with $2$.
 In the discrete case, the Clopper-Pearson interval, also known as the exact binomial confidence interval, provides a conservative estimate of the true probability of an event given a number of observed successes in a fixed number of trials.
 In our context, we use this method to construct confidence intervals for the probabilities of the top class and the runner-up class.
 
-To account for the fact that we are estimating multiple probabilities simultaneously, we apply the Bonferroni correction.
-This correction adjusts the significance level for each individual confidence interval to ensure that the overall probability of any interval not containing the true value remains below our chosen significance level.
-
-Concretely, let $n_A$ be the number of times the top class $A$ is observed in $n$ Monte Carlo samples, and $n_B$ be the count for the runner-up class $B$.
-We construct a lower bound $\underline{p_A}$ for the probability of class $A$ and an upper bound $\overline{p_B}$ for class $B$ using the Clopper-Pearson method:
-
-\begin{equation}
-    \underline{p_A} = \text{BetaInv}(\alpha/2, n_A, n - n_A + 1)
-\end{equation}
-\begin{equation}
-    \overline{p_B} = \text{BetaInv}(1-\alpha/2, n_B + 1, n - n_B)
-\end{equation}
+Concretely, let $n_y$ be the number of times the top class $y$ is observed in $n$ Monte Carlo samples, and $n_j$ be the count for the runner-up class $j$.
+We construct a lower bound $\underline{p_y}$ for the probability of class $y$ and an upper bound $\overline{p_j}$ for class $j$ using the Clopper-Pearson method:
+\begin{gather*}
+    \underline{p_y} = \text{BetaInv}(\alpha/2, n_y, n - n_A + 1)\\
+    \overline{p_j} = \text{BetaInv}(1-\alpha/2, n_j + 1, n - n_j)
+\end{gather*}
 
 Here, $\text{BetaInv}$ is the inverse of the cumulative distribution function of the Beta distribution, and $\alpha$ is the chosen significance level (typically 0.001 or smaller).
 
 Consequently, we can use these bounds to compute a conservative estimate of the margin:
 
 \begin{equation}
-    \Hat{M}(\Hat{F},x)= \underline{p_A} - \overline{p_B}, \quad\tilde{M}(\Phi^{-1}\circ\Hat{F},x) = \Phi^{-1}(\underline{p_A}) - \Phi^{-1}(\overline{p_B})
+    \Hat{M}(\Hat{F},x)= \underline{p_y} - \overline{p_j}, \quad\tilde{M}(\Phi^{-1}\circ\Hat{F},x) = \Phi^{-1}(\underline{p_y}) - \Phi^{-1}(\overline{p_j})\label{eq:clopper-pearson}
 \end{equation}
 
 where $\Phi^{-1}$ is the inverse of the standard normal cumulative distribution function.
@@ -213,7 +249,8 @@ By incorporating this information, Bernstein's inequality can provide tighter bo
 However, the standard Bernstein inequality still requires knowledge of the true variance or at least a good upper bound, which is often unknown in practical situations.
 This limitation led to the development of the empirical Bernstein inequality.
 This data-dependent version estimates the variance from the sample itself, rather than relying on a priori bounds or assumptions.
-\begin{proposition}[Empirical Bernstein Inequality]\label{prop:empirical-bernstein-inequality}
+\begin{proposition}[Empirical Bernstein Inequality, \citep{maurer2009empirical}]
+    \label{prop:empirical-bernstein-inequality}
     Let $X_1, X_2, \ldots, X_n$ be independent random variables with values in $[a,b]$, and let $\bar{X}_n = \frac{1}{n}\sum_{i=1}^n X_i$ be their empirical mean.
     Define the empirical variance as
     \[
