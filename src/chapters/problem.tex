@@ -21,7 +21,7 @@ This process begins by generating $n$ independent noise samples from a Gaussian 
 We then evaluate the base classifier on each of these noisy inputs, producing a set of class labels.
 Finally, we count the occurrences of each class to form our vector $X$.
 The procedure is illustrated in Algorithm~\ref{alg:vector-of-counts}.
-\begin{algorithm}[h]
+\begin{algorithm}[htbp]
     \DontPrintSemicolon % Removes semicolons at the end of lines
     \KwIn{The base classifier $F$, the number of samples $n$, the standard deviation $\sigma$ and an input $x$}
     \KwOut{The vector of counts $X = (X_1, \ldots, X_m)$}
@@ -51,7 +51,7 @@ Here, instead of a vector of counts, we produce a matrix $X \in \mathbb{R}^{n \t
 The process begins similarly to the discrete case, with the generation of $n$ independent noise samples.
 We then evaluate the base classifier on each noisy input, but instead of counting class labels, we store the full output vectors as rows of our matrix $X$.
 Algorithm~\ref{alg:probability-matrix} explains the sampling process.
-\begin{algorithm}[h]
+\begin{algorithm}[htbp]
     \DontPrintSemicolon
     \KwIn{The base classifier $F: \mathbb{R}^d \rightarrow \Delta^{m-1}$, the number of samples $n$, the standard deviation $\sigma$ and an input $x$}
     \KwOut{The grid matrix $X \in \mathbb{R}^{n \times m}$}
@@ -199,7 +199,7 @@ Formally, if we denote the index of the class with the second-highest score as $
 \end{align*}
 
 Thus, in Algorithm~\ref{alg:bonferroni}, we can replace $m$ with $2$.
-In the discrete case, the Clopper-Pearson interval, also known as the exact binomial confidence interval, provides a conservative estimate of the true probability of an event given a number of observed successes in a fixed number of trials.
+In the discrete case, the Clopper-Pearson interval (CP), also known as the exact binomial confidence interval, provides a conservative estimate of the true probability of an event given a number of observed successes in a fixed number of trials.
 In our context, we use this method to construct confidence intervals for the probabilities of the top class and the runner-up class.
 
 Concretely, let $n_y$ be the number of times the top class $y$ is observed in $n$ Monte Carlo samples, and $n_j$ be the count for the runner-up class $j$.
@@ -214,7 +214,7 @@ Here, $\text{BetaInv}$ is the inverse of the cumulative distribution function of
 Consequently, we can use these bounds to compute a conservative estimate of the margin:
 
 \begin{equation}
-    \Hat{M}(\Hat{F},x)= \underline{p_y} - \overline{p_j}, \quad\tilde{M}(\Phi^{-1}\circ\Hat{F},x) = \Phi^{-1}(\underline{p_y}) - \Phi^{-1}(\overline{p_j})\label{eq:clopper-pearson}
+    \Hat{M}(\Hat{F},x)= \underline{p_y} - \overline{p_j}, \quad\Hat{M}(\Phi^{-1}\circ\Hat{F},x) = \Phi^{-1}(\underline{p_y}) - \Phi^{-1}(\overline{p_j})\label{eq:clopper-pearson}
 \end{equation}
 
 where $\Phi^{-1}$ is the inverse of the standard normal cumulative distribution function.

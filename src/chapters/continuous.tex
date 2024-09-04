@@ -19,7 +19,8 @@ They also provide a plethora of betting strategies that range from simple to imp
 For the intents of this report, we will use the simplest confidence sequence mentioned in their paper, namely, the following, as we leave the exploration of tighter confidence sequences for future work.
 
 \begin{proposition}[\cite{smith2022estimating}]\label{prop:confidence-sequence}
-    Suppose we have a possibly infinite sequence of independent and identically distributed random variables $(X_t)_{t=1}^\infty$. Then,
+    Suppose we have a possibly infinite sequence of independent and identically distributed random variables $(X_t)_{t=1}^\infty$.
+    Then,
     \[
         C_t^{\text{PrPI-EB}} \coloneqq \left( \frac{\sum_{i=1}^t \lambda_i X_i}{\sum_{i=1}^t \lambda_i}\pm \sqrt{\frac{2\log(2/\alpha) + \sum_{i=1}^t v_i \psi_e (\lambda_i)}{\sum_{i=1}^t \lambda_i}} \right)
     \]
@@ -70,5 +71,3 @@ Our approach, however, is more direct; we reuse our lemma~\ref{lemma:approximati
 If we define $Z_M\coloneqq\Phi^{-1}_M(X^1)-\max_{j \neq 1}\Phi^{-1}_M(X^j)$, then $Z_M$ is a bounded random variable.
 Thanks to the lemma, a lower confidence bound with level $\alpha$ on the vector $Z_M$ is also a lower confidence bound with level $\alpha$ on $Z$.
 Since our approximation is based on the supposition that $\Bar{X^1}\geq\frac{1}{2}$, we can split our procedure into two steps (exactly like in Algorithm~\ref{alg:second-margin-estimation}): first, we test our hypothesis at level $\frac{\alpha}{2}$, then we estimate the margin using the taylor series approximation at level $\frac{\alpha}{2}$ if the test succeeds, else we fall back on the standard method based on Bonferroni correction.
-
-

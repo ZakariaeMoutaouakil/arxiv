@@ -4,10 +4,10 @@
 In the context of adversarially robust classification, the concept of certified radius plays a crucial role.
 However, it is important to note that the certified radius is calculated only at a given point.
 This localized measure, while useful, does not provide a comprehensive understanding of a classifier's robustness across the entire input space.
-To address this limitation, we introduce a global measure for smoothed classifiers obtained through randomized smoothing: the \textit{certified test-set accuracy} (CTA).
+To address this limitation, practitioners use a global measure for smoothed classifiers obtained through randomized smoothing, called the \textit{certified test-set accuracy} (CTA).
 
-Let $g$ be a classifier, $S = \{(x_1, c_1), \ldots, (x_m, c_m)\}$ be a test set, and $r$ be a radius.
-We define an indicator function for each example $i \in [m]$:
+Let $g$ be a classifier, $S = \{(x_1, c_1), \ldots, (x_N, c_N)\}$ be a test set, and $r$ be a radius.
+We define an indicator function for each example $i \in [N]$:
 
 \[
     z_i(r) = \mathbbm{1}[g(x_i + \delta) = c_i \quad \forall \|\delta\|_2 < r]
@@ -16,43 +16,49 @@ We define an indicator function for each example $i \in [m]$:
 The theoretical certified test-set accuracy at radius $r$ is then defined as:
 
 \[
-    \text{CertAcc}_{\text{theo}}(r) = \frac{1}{m} \sum_{i=1}^m z_i(r)
+    \text{CertAcc}_{\text{theo}}(r) = \frac{1}{N} \sum_{i=1}^N z_i(r)
 \]
 
 This measure represents the fraction of the test set that $g$ classifies correctly with predictions that are certifiably robust within an $\ell_2$ ball of radius $r$.
 
 For randomized smoothing classifiers, computing the theoretical certified test-set accuracy exactly is not feasible.
-Instead, we introduce the approximate certified test-set accuracy.
+Instead, we introduce the \textit{approximate certified test-set accuracy}.
 
 Let $Y_i(r)$ be a Bernoulli random variable denoting the event that, for example $i$, estimating the certified radius of the smoothed classifier returns a certified radius $R$ which is greater than $r$.
 The approximate certified test-set accuracy is then:
 
 
 \[
-    \text{CertAcc}_{\text{approx}}(r) = \frac{1}{m} \sum_{i=1}^m Y_i(r)
+    \text{CertAcc}_{\text{approx}}(r) = \frac{1}{N} \sum_{i=1}^N Y_i(r)
 \]
 
 Importantly, $Y_i(r) = 1$ does not necessarily imply $z_{i}(r) = 1$.
 However, if $z_i(r) = 0$, then $P(Y_i(r) = 1) \leq \alpha$.
-This relationship allows us to construct a one-sided confidence interval for the unobserved quantity $\frac{1}{m} \sum_{i=1}^m z_{i}(r)$ using the observed quantities $\sum_{i=1}^m Y_i(r)$ and $m$ (see Theorem ).
+This relationship allows us to construct a one-sided confidence interval for the unobserved quantity $\frac{1}{N} \sum_{i=1}^N z_{i}(r)$ using the observed quantity $\sum_{i=1}^N Y_i(r)$ (see Theorem 6 in~\citep{cohen2019certified}).
 
 \subsection{Results}\label{subsec:results}
 
 To compare our new radius estimation methods with the standard approaches, we run our experiments on the CIFAR-10 dataset.
 Results for the Imagenet dataset can be found in Appendix~\ref{sec:more-experimental-results}.
 The failure rate $\alpha$ is chosen to be $0.001$ throughout all the experiments.
-The base classifier $F$ is the same 110-layer residual network from Cohen et al, trained using Gaussian noise data augmentation, such that the standard deviation $\sigma$ of the Gaussian noise used during training is the same one used when smoothing the base classifier.
-In all the figures, we compare the margins instead of the radii since they are directly proportional, and we use them interchangeably in our analysis.
+The base classifier $F$ is the same 110-layer residual network from~\citep{cohen2019certified}, trained using Gaussian noise data augmentation, such that the standard deviation $\sigma$ of the Gaussian noise used during training is the same one used when smoothing the base classifier.
+
+In all the figures, the CTA curves that are plotted are actually based on the margins instead of the radii since they are directly proportional (meaning we only estimated margins instead of radii), hence we use them interchangeably in our analysis.
+To explain how to read one of our figures, we can take for example Figure~\ref{fig:discrete_sigma}.
+We have six comparisons, in the first three comparisons (on top), the certified radius that was chosen is the first radius (Equation~\eqref{eq:first-radius}), and it was estimated for all examples of the test set in order to obtain the CTA.
+As explained in this Section~\ref{subsec:practical-calculation-of-confidence-interval}, we can estimate the certified radius using the Bonferroni correction alongside an exact one-sided confidence interval (as outlined in Algorithm~\ref{alg:bonferroni}).
+The Bonferroni approach is agnostic to the type of confidence interval being used, which leaves us with the choice of the confidence interval that is indicated in the legend of the plot after a plus sign.
+
 
 Starting with the discrete case, there are two main hyperparameters that influence the shape of the CTA curve: the number of samples $n$ and the standard deviation $\sigma$.
 The easiest hyperparameter dependence to analyse is the number of samples $n$.
-As Figure~\ref{fig:discrete_num} shows, the standard Bonferroni approach is far more conservative when the number of samples is small, although as the sample size increases, the impact of this correction becomes less significant, and the two curves end up converging and overlapping as a natural consequence of improved statistical estimation, reduced conservatism in bounds, and diminished impact of discretization effects.
-It is also worth noting that the second margin takes much more samples to converge than the first one which is linear, and the differences are much more prononced at larger radii.
+As Figure~\ref{fig:discrete_num} and Table~\ref{tab:simplified-certified-accuracy} show, the standard Bonferroni approach is far more conservative when the number of samples is small, although as the sample size increases, the impact of this correction becomes less significant, and the two curves end up converging and overlapping as a natural consequence of improved statistical estimation, reduced conservatism in bounds, and diminished impact of discretization effects.
+It is also worth noting that the second margin takes much more samples to converge than the first one which is linear, and the differences are much more pronounced at larger radii.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/discrete_num}
-    \caption{Certified accuracies' comparison on the CIFAR-10 dataset in the discrete case for different numbers of samples (displayed on the columns) with $\sigma = 0.12$. CP + Bonferroni means Clopper-Pearson interval with Bonferroni correction, and dichotomy means our new approach in section~\ref{sec:discrete}. The first row compares the certified accuracies using the first margin and the second row compares the certified accuracies using the second margin.}
+    \caption{Certified accuracies' comparison on the CIFAR-10 dataset in the discrete case for different numbers of samples (displayed on the columns) with $\sigma = 0.12$. CP + Bonferroni means Clopper-Pearson interval with Bonferroni correction, and Ours means our new approach in section~\ref{sec:discrete}. The first row compares the certified accuracies using the first margin and the second row compares the certified accuracies using the second margin.}
     \label{fig:discrete_num}
 \end{figure}
 
@@ -68,13 +74,13 @@ It is also worth noting that the second margin takes much more samples to conver
         & 0.5 & 1.0 & 1.5 & 2.0 & 2.5 & 3.0 & 3.5 & 4.0 & 4.5 \\
         \midrule
         CP + Bonferroni & 0.774 & 0.744 & 0.720 & 0.662 & 0.582 & 0.000 & 0.000 & 0.000 & 0.000 \\
-        Dichotomy              & 0.780 & 0.746 & 0.726 & 0.670 & 0.614 & 0.538 & 0.538 & 0.538 & 0.538 \\
+        Ours              & 0.780 & 0.746 & 0.726 & 0.670 & 0.614 & 0.538 & 0.538 & 0.538 & 0.538 \\
         Gain (\%) & 0.78\% & 0.27\% & 0.83\% & 1.21\% & 5.50\% & $\infty$ & $\infty$ & $\infty$ & $\infty$ \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-The second important hyperparameter is the standard deviation $\sigma$.
+The second most important hyperparameter to consider is the standard deviation $\sigma$.
 As Figure~\ref{fig:discrete_sigma} shows, when the standard deviation increases, the CTA decreases as the classifier’s base accuracy decreases because the added noise makes the classification task harder, leading the model to make more errors on the noisy data.
 When the standard deviation is too high, even though the certified radius increases, the base accuracy decreases enough to reduce the overall certified test-set accuracy.
 Therefore, the differences between the two methods become more negligible as the standard deviation increases.
@@ -98,12 +104,12 @@ As $T \to 0^+$, the tempered softmax approaches a hard maximum (one-hot vector).
 As $T \to \infty$, the tempered softmax approaches a uniform distribution.
 When $T = 1$, it reduces to the standard softmax function.
 
-Figures~\ref{fig:cont_num} and~\ref{fig:cont_sigma} show the effect of increasing the number of samples $n$ and increasing the standard deviation $\sigma$ respectively.
+Figures~\ref{fig:cont_num} \&~\ref{fig:cont_sigma} and tables~\ref{tab:certified-accuracy} \&~\ref{tab:certified-accuracy-2} show the effect of increasing the number of samples $n$ and increasing the standard deviation $\sigma$ respectively.
 The effects of these hyperparameters are similar in both discrete and continuous case.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/cont_num}
-    \caption{Certified accuracies' comparison on the CIFAR-10 dataset in the continuous case for different sample sizes (displayed on the columns) with $\sigma = 0.5$ and a temperature equal to $1$. CS/Bernstein + Bonferroni stands for the Bonferroni approach with either the empirical Bernstein interval (Proposition~\ref{prop:empirical-bernstein-inequality}) or the confidence sequence (Proposition~\ref{prop:confidence-sequence}), and CS/Bernstein stands for the new approach in section~\ref{sec:continuous}. The first row compares the certified accuracies using the first margin and the second row compares the certified accuracies using the second margin.}
+    \caption{Certified accuracies' comparison on the CIFAR-10 dataset in the continuous case for different sample sizes (displayed on the columns) with $\sigma = 0.5$ and a temperature equal to $1$. CS/Bernstein + Bonferroni stands for the Bonferroni approach with either the empirical Bernstein interval (Proposition~\ref{prop:empirical-bernstein-inequality}) or the confidence sequence (Proposition~\ref{prop:confidence-sequence}), and CS/Bernstein + Ours stands for the new approach in section~\ref{sec:continuous}, where the interval used is either the empirical Bernstein interval or the confidence sequence as before. The first row compares the certified accuracies using the first margin and the second row compares the certified accuracies using the second margin.}
     \label{fig:cont_num}
 \end{figure}
 \begin{figure}[htbp]
@@ -132,17 +138,17 @@ The effects of these hyperparameters are similar in both discrete and continuous
         \midrule
         \multirow{3}{*}{100}
         & CS + Bonferroni & 0.400 & 0.347 & 0.289 & 0.220 & 0.157 & 0.066 & 0.000 & 0.000 & 0.000 \\
-        & CS              & 0.419 & 0.362 & 0.303 & 0.239 & 0.173 & 0.092 & 0.000 & 0.000 & 0.000 \\
+        & CS + Ours            & 0.419 & 0.362 & 0.303 & 0.239 & 0.173 & 0.092 & 0.000 & 0.000 & 0.000 \\
         & Comparison (\%) & 4.69\% & 4.28\% & 5.04\% & 8.70\% & 10.65\% & 39.16\% & N/A & N/A & N/A \\
         \midrule
         \multirow{3}{*}{300}
         & CS + Bonferroni & 0.526 & 0.464 & 0.411 & 0.354 & 0.296 & 0.233 & 0.173 & 0.101 & 0.000 \\
-        & CS              & 0.536 & 0.471 & 0.416 & 0.361 & 0.301 & 0.239 & 0.179 & 0.105 & 0.000 \\
+        & CS + Ours             & 0.536 & 0.471 & 0.416 & 0.361 & 0.301 & 0.239 & 0.179 & 0.105 & 0.000 \\
         & Comparison (\%) & 1.93\% & 1.55\% & 1.39\% & 1.89\% & 1.94\% & 2.52\% & 3.49\% & 4.06\% & N/A \\
         \midrule
         \multirow{3}{*}{500}
         & CS + Bonferroni & 0.560 & 0.490 & 0.434 & 0.379 & 0.322 & 0.261 & 0.199 & 0.133 & 0.050 \\
-        & CS              & 0.568 & 0.497 & 0.442 & 0.383 & 0.329 & 0.266 & 0.202 & 0.136 & 0.054 \\
+        & CS + Ours             & 0.568 & 0.497 & 0.442 & 0.383 & 0.329 & 0.266 & 0.202 & 0.136 & 0.054 \\
         & Comparison (\%) & 1.43\% & 1.33\% & 2.00\% & 0.99\% & 2.08\% & 2.01\% & 1.89\% & 2.33\% & 9.21\% \\
         \bottomrule
     \end{tabular}
@@ -160,17 +166,17 @@ The effects of these hyperparameters are similar in both discrete and continuous
         \midrule
         \multirow{3}{*}{100}
         & CS + Bonferroni & 0.436 & 0.415 & 0.393 & 0.369 & 0.352 & 0.328 & 0.305 & 0.284 & 0.259 \\
-        & CS              & 0.437 & 0.418 & 0.401 & 0.383 & 0.373 & 0.364 & 0.359 & 0.354 & 0.347 \\
+        & CS + Ours             & 0.437 & 0.418 & 0.401 & 0.383 & 0.373 & 0.364 & 0.359 & 0.354 & 0.347 \\
         & Comparison (\%) & 0.19\% & 0.83\% & 1.91\% & 3.72\% & 5.95\% & 11.17\% & 17.68\% & 24.67\% & 34.03\% \\
         \midrule
         \multirow{3}{*}{300}
         & CS + Bonferroni & 0.572 & 0.545 & 0.518 & 0.493 & 0.471 & 0.451 & 0.431 & 0.413 & 0.391 \\
-        & CS              & 0.572 & 0.547 & 0.523 & 0.500 & 0.481 & 0.465 & 0.451 & 0.439 & 0.427 \\
+        & CS + Ours             & 0.572 & 0.547 & 0.523 & 0.500 & 0.481 & 0.465 & 0.451 & 0.439 & 0.427 \\
         & Comparison (\%) & 0.00\% & 0.42\% & 0.92\% & 1.46\% & 2.15\% & 2.97\% & 4.59\% & 6.25\% & 9.24\% \\
         \midrule
         \multirow{3}{*}{500}
         & CS + Bonferroni & 0.600 & 0.578 & 0.553 & 0.525 & 0.500 & 0.478 & 0.457 & 0.437 & 0.419 \\
-        & CS              & 0.600 & 0.578 & 0.556 & 0.530 & 0.509 & 0.489 & 0.473 & 0.461 & 0.448 \\
+        & CS + Ours             & 0.600 & 0.578 & 0.556 & 0.530 & 0.509 & 0.489 & 0.473 & 0.461 & 0.448 \\
         & Comparison (\%) & 0.08\% & 0.08\% & 0.53\% & 1.03\% & 1.77\% & 2.29\% & 3.50\% & 5.62\% & 6.98\% \\
         \bottomrule
     \end{tabular}

@@ -98,7 +98,7 @@ A positive margin indicates correct classification, with larger values suggestin
 \begin{equation}
     M(F,x) \coloneqq F(x)_{y} - \max_{i \neq y}\{F(x)_i\}.\label{eq:prediction-margin}
 \end{equation}
-\begin{proposition}[\citep{tsuzuku2018lipschitz}]
+\begin{proposition}[\cite{tsuzuku2018lipschitz}]
     If the classifier $F$ is Lipschitz continuous with Lipschitz constant $L(F)$ and if $M(F,x)>\sqrt{2}L(F)r$, then for any adversarial example $x+\epsilon$ such that $\lVert \epsilon \rVert\leq r$, $M(F,x+\epsilon)>0$.
 \end{proposition}
 
