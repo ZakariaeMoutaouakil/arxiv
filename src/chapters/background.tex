@@ -1,7 +1,7 @@
 \section{Background \& Related Work}\label{sec:background-&-related-work}
 
 \subsection{Notation}\label{subsec:notation}
-Let $\mathcal{X}$ be a subset of the input space $\mathbb{R}^d$.
+Following the same notations in~\citep{delattre2023lipschitz}, let $\mathcal{X}$ be a subset of the input space $\mathbb{R}^d$.
 We identify the set of labels $\mathcal{Y}$ with the set of integers $\{1, \ldots, m\}$, where $m$ is the number of classes.
 
 If $x$ is a data point in $\mathcal{X}$ and $y$ is its true label in $\mathcal{Y}$, then the prediction of a typical neural network classifier $F_{out}: \mathcal{X} \rightarrow \mathcal{Y}$ can be decomposed as $F_{out}(x)=\arg\max_{k \in \mathcal{Y}}s_k\circ f(x)$ where $g: \mathcal{X} \rightarrow \mathbb{R}^m$ is a subclassifier that outputs logits
