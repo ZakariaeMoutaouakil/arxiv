@@ -36,7 +36,7 @@ The procedure is illustrated in Algorithm~\ref{alg:vector-of-counts}.
     \caption{Sampling in the Discrete Case}\label{alg:vector-of-counts}
 \end{algorithm}
 
-This vector of counts $X$ can be interpreted as a sample from a multinomial distribution with parameters $n$ and $p = (p_1, \ldots, p_K)$, where $p_k = \mathbb{P}(f(x + \epsilon) = k)$.
+This vector of counts $X$ can be interpreted as a sample from a multinomial distribution with parameters $n$ and $p = (p_1, \ldots, p_m)$, where $p_k = \mathbb{P}(f(x + \epsilon) = k)$.
 The probability vector $p$ is precisely what we aim to approximate, as it represents the output of the smoothed classifier.
 To obtain a concrete prediction, we simply select the class with the highest count: $\hat{F}_{out}(x) = \argmax_{k \in \{1, \ldots, m\}} X_k$.
 This approach effectively approximates the argmax operation over the class probabilities in the definition of the smoothed classifier.

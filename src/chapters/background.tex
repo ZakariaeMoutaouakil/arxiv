@@ -4,45 +4,45 @@
 Let $\mathcal{X}$ be a subset of the input space $\mathbb{R}^d$.
 We identify the set of labels $\mathcal{Y}$ with the set of integers $\{1, \ldots, m\}$, where $m$ is the number of classes.
 
-If $x$ is a data point in $\mathcal{X}$ and $y$ is its true label in $\mathcal{Y}$, then the prediction of a typical neural network classifier $F_{out}: \mathcal{X} \rightarrow \mathcal{Y}$ can be decomposed as $F_{out}(x)=\arg\max_{k \in \mathcal{Y}}s_k\circ f(x)$ where $g: \mathcal{X} \rightarrow \mathbb{R}^d$ is a subclassifier that outputs logits
-and $s: \mathbb{R}^d \rightarrow \Delta^{d-1}$ is the normalizing last layer that projects onto the $(d-1)$-dimensional probability simplex defined as:
+If $x$ is a data point in $\mathcal{X}$ and $y$ is its true label in $\mathcal{Y}$, then the prediction of a typical neural network classifier $F_{out}: \mathcal{X} \rightarrow \mathcal{Y}$ can be decomposed as $F_{out}(x)=\arg\max_{k \in \mathcal{Y}}s_k\circ f(x)$ where $g: \mathcal{X} \rightarrow \mathbb{R}^m$ is a subclassifier that outputs logits
+and $s: \mathbb{R}^m \rightarrow \Delta^{m-1}$ is the normalizing last layer that projects onto the $(m-1)$-dimensional probability simplex defined as:
 \[
-    \Delta^{d-1} \coloneqq \left\{p \in \mathbb{R}^d : \, p_i \geq 0, \,\sum_{i=1}^d p_i = 1 \right\}.
+    \Delta^{m-1} \coloneqq \left\{p \in \mathbb{R}^m : \, p_i \geq 0, \,\sum_{i=1}^m p_i = 1 \right\}.
 \]
 
 We denote by $F\coloneqq s\circ f$ the classifier that outputs a probability distribution over the $m$ classes.
 We call $F$ the \textbf{soft classifier}, and $F_{out}$ the \textbf{hard classifier}.
 
-The simplex maps that are most commonly found in the literature are the softmax, the hardmax that is defined as the projection that puts all mass in the index of the maximum component (with ties broken arbitrarily), and the sparsemax that is defined as the Hilbert projection onto the convex closed set which is the $d-1$-dimensional probability simplex.
+The simplex maps that are most commonly found in the literature are the softmax~\citep{bridle1989training}, the hardmax that is defined as the projection that puts all mass in the index of the maximum component (with ties broken arbitrarily), and the sparsemax~\citep{martins16} that is defined as the Hilbert projection onto the convex closed set which is the $(m-1)$-dimensional probability simplex.
 
 We will call the case where we use the hardmax as a simplex map the \textbf{discrete case} and the case where we use a continuous simplex projection (like the softmax or the sparsemax) the \textbf{continuous case}.
 
 \subsection{Randomized Smoothing}\label{subsec:randomized-smoothing}
-Randomized smoothing is a technique designed to enhance the robustness of classifiers against small perturbations or adversarial attacks that stems from a simple intuition: if a classifier's decision is stable under small random perturbations of the input, it's likely to be more robust overall (this intuition will be made more rigorous using the concept of robustness radius).
+Randomized smoothing is a technique designed to enhance the robustness of classifiers against small perturbations or adversarial attacks that stems from a simple intuition: if a classifier's decision is stable under small random perturbations of the input, it's likely to be more robust overall (this intuition will be made more rigorous using the concept of robustness radius in section~\ref{subsec:robustness-radius}).
 
-Figure~\ref{fig:pandas} provides a visual representation of how randomized smoothing works in practice.
+Figure~\ref{fig:pandas} from~\citep{cohen2019certified} provides a visual representation of how randomized smoothing works in practice.
 The left image shows an original input $x$ - in this case, a clear photograph of a panda.
 The right image demonstrates the effect of applying Gaussian noise with $\sigma = 0.5$ to the same input.
 This noisy version represents one of the many perturbations over which the smoothed classifier makes its prediction.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/pandas}
-    \caption{Caption for the figure.}
+    \caption{Visualization of randomized smoothing. Left: Original input image $x$ of a giant panda. Right: The same image with Gaussian noise applied ($\sigma = 0.5$), illustrating the concept of randomized smoothing. The smoothed classifier's prediction is based on the most likely prediction by the base classifier on such random Gaussian corruptions of $x$. Note that this Gaussian noise is much larger in magnitude than typical adversarial perturbations, helping to "drown out" smaller adversarial attacks and improve classifier robustness.}
     \label{fig:pandas}
 \end{figure}
 
 Importantly, the magnitude of this Gaussian noise is much larger than typical adversarial perturbations.
 This illustrates a key intuition behind randomized smoothing: by considering predictions over these large random perturbations, the classifier becomes robust to smaller, potentially adversarial changes in the input.
-In essence, the large random perturbations "drown out" the smaller adversarial ones.
+In essence, the large random perturbations ``drown out'' the smaller adversarial ones.
 
-With this visual intuition in mind, let's formally define the smoothed classifier.
-Following the same conventions as in the previous section, we define the smoothed classifier $\hat{F}: \mathcal{X} \rightarrow \Delta^{d-1}$ using randomized smoothing as implementing a majority vote over predictions of the soft classifier $F$ with noisy versions of the input:
+With this visual intuition in mind, we can formally define the smoothed classifier.
+Following the same conventions in the previous section, we define the smoothed classifier $\hat{F}: \mathcal{X} \rightarrow \Delta^{m-1}$ using randomized smoothing as implementing a majority vote over predictions of the soft classifier $F$ with noisy versions of the input:
 
 \begin{align*}
     \hat{F}(x) \coloneqq \mathbb{E}_{\epsilon \sim \mathcal{N}(0, \sigma^2 I)} [F(x + \epsilon)],
 \end{align*}
 
-where $\epsilon \sim \mathcal{N}(0, \sigma^2 I)$ represents Gaussian noise with mean $0$ and covariance matrix $\sigma^2 I$.
+where $\epsilon \sim \mathcal{N}(0, \sigma^2 I)$ represents isotropic Gaussian noise with mean $0$ and covariance matrix $\sigma^2 I$.
 The final smoothed classifier is given by $\hat{F}_{out}(x) = \arg\max_{k \in \mathcal{Y}} \hat{F}_k(x)$.
 We can reinterpret this expectation as convolving $F$ with the Gaussian kernel $p_\sigma$; $\hat{F} = F * p_\sigma$, where
 \begin{align*}
@@ -51,7 +51,7 @@ We can reinterpret this expectation as convolving $F$ with the Gaussian kernel $
 
 \subsection{Robustness Radius}\label{subsec:robustness-radius}
 
-For a given classifier $F: \mathcal{X} \rightarrow \Delta^{d-1}$, we can quantify its decision confidence for a specific input $x$ using a metric called the certified radius, denoted as $R(F,x)$.
+For a given classifier $F: \mathcal{X} \rightarrow \Delta^{m-1}$, we can quantify its decision confidence for a specific input $x$ using a metric called the \textit{certified radius}, denoted as $R(F,x)$.
 This radius represents the maximum allowable perturbation $\epsilon$ that can be applied to the input $x$ while ensuring the classifier's output remains consistent with the true label $y$.
 
 The certified radius serves as an indicator of a classifier's resilience to input disturbances.
@@ -64,11 +64,12 @@ The right panel shows the probabilities assigned to different classes (represent
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/radius}
-    \caption{Caption for the figure.}
+    \caption{Visualization of randomized smoothing and robustness radius. Left: 2D projection of decision boundaries for a smoothed classifier, with concentric circles representing increasing perturbation radii around input point x. Colors indicate different class regions. Right: Bar chart showing how class probabilities (represented by colored bars) change as perturbation radius increases. $\underline{p_A}$ and $\overline{p_B}$ denote pessimistic bounds on the probabilities of the top two classes at a given radius. This illustration demonstrates how the certified radius is determined as the largest perturbation within which the original class maintains the highest probability.}
     \label{fig:radius}
 \end{figure}
 
-The certified radius $R(F,x)$ would correspond to the largest circle in the left panel where the original class (blue in this case) maintains the highest probability. In the right panel, this would be the point where the blue bar remains the tallest.
+The certified radius $R(F,x)$ would correspond to the largest circle in the left panel where the original class (blue in this case) maintains the highest probability.
+In the right panel, this would be the point where the blue bar remains the tallest.
 
 In the context of randomized smoothing with Gaussian noise, the size of the perturbation is usually measured using the $\ell_2$-norm, therefore we can formally define the certified radius as:
 
@@ -86,18 +87,18 @@ where $B_2(0,\epsilon)$ represents the $\ell_2$-ball centered at the origin with
 
 The concept of Lipschitz continuity provides an intuitive framework for understanding classifier robustness and its relation to the certified radius.
 
-A soft classifier $F: \mathcal{X} \rightarrow \Delta^{d-1}$ is Lipschitz continuous if there exists a constant $L \geq 0$ such that for all $x_1, x_2 \in \mathcal{X}$:
+A soft classifier $F: \mathcal{X} \rightarrow \Delta^{m-1}$ is \textit{Lipschitz continuous} if there exists a constant $L \geq 0$ such that for all $x_1, x_2 \in \mathcal{X}$:
 \begin{align*}
     \lVert F(x_1)- F(x_2) \rVert \leq L \cdot \lVert  x_1- x_2\rVert.
 \end{align*}
 Lipschitz continuity essentially bounds the maximum change in the output for a given change in the input, which means that a smaller Lipschitz constant indicates that the classifier's output is less sensitive to input perturbations.
 
-The following proposition highlights the relationship between Lipschitz continuity and a quantity named the prediction margin $M(f,x)$ (defined below) which quantifies how far the input is from the decision boundary of the classifier.
+The following proposition highlights the relationship between Lipschitz continuity and a quantity named the \textit{prediction margin} $M(F,x)$ (defined below) which quantifies how far the input is from the decision boundary of the classifier.
 A positive margin indicates correct classification, with larger values suggesting higher confidence, while a negative margin indicates misclassification:
 \begin{equation}
     M(F,x) \coloneqq F(x)_{y} - \max_{i \neq y}\{F(x)_i\}.\label{eq:prediction-margin}
 \end{equation}
-\begin{proposition}
+\begin{proposition}[\citep{tsuzuku2018lipschitz}]
     If the classifier $F$ is Lipschitz continuous with Lipschitz constant $L(F)$ and if $M(F,x)>\sqrt{2}L(F)r$, then for any adversarial example $x+\epsilon$ such that $\lVert \epsilon \rVert\leq r$, $M(F,x+\epsilon)>0$.
 \end{proposition}
 
@@ -115,15 +116,19 @@ As a result, we can write our first certified radius for a smoothed classifier a
 
 \subsection{Certified Radius and Noise Magnitude}\label{subsec:certified-radius-and-noise-magnitude}
 In the discrete case, Cohen et al.
-proved a model-agnostic certifiably tight radius for randomized smoothing, meaning meaning there exist adversarial examples at distances arbitrarily close to the ball centered at $x$ with their radius.
+proved a model-agnostic certifiably tight radius for randomized smoothing, meaning there exist adversarial examples at distances arbitrarily close to the ball centered at $x$ with their radius.
 The method scales to large networks and high-dimensional data, as it only requires evaluating the base classifier on noisy samples.
 
 Formally, their certified radius is defined as:
 \begin{equation}
-    R_2(\hat{F},x) \coloneqq \frac{\sigma}{2}M(\Phi^{-1}\circ\hat{F},x)=\frac{\sigma}{2}\left(\Phi^{-1}(\hat{F}(x)_{y})-\Phi^{-1}(\max_{i \neq y}\{ (\hat{F}(x)_i) \})\right),\label{eq:second-radius}
+    R_2(\hat{F},x) \coloneqq \frac{\sigma}{2}M(\Phi^{-1}\circ\hat{F},x)=\frac{\sigma}{2}\left(\Phi^{-1}(\hat{F}(x)_{y})-\Phi^{-1}(\max_{i \neq y}\{ \hat{F}(x)_i \})\right),\label{eq:second-radius}
 \end{equation}
-where $\Phi$ is the Gaussian cumulative distribution function.
-The appearance of the Gaussian CDF ($\Phi$) in this formula is tied to the blurring effect of the decision boundary induced by the addition of Gaussian noise to the input.
+or equivalently:
+\[
+    R_2(\hat{F},x) =\frac{\sigma}{2}\left(\Phi^{-1}(\hat{F}(x)_{y})-\max_{i \neq y}\left\{  \Phi^{-1}( \hat{F}(x)_i)\right\}\right),
+\]
+where $\Phi$ is the Gaussian cumulative distribution function (CDF) and $\sigma$ is the standard deviation of the Gaussian noise added to the input.
+The appearance of the Gaussian CDF ($\Phi$) in this formula is tied to the blurring effect of the decision boundary induced by the introduction of Gaussian data augmentation to the input.
 
 This guarantee is tight because it considers the worst-case scenario where all the probability mass of the runner-up class is concentrated at the point closest to the decision boundary.
 It's worth noting that the noise magnitude $\sigma$ plays a crucial role in both cases.
