@@ -45,10 +45,13 @@ The base classifier $F$ is the same 110-layer residual network from~\citep{cohen
 
 In all the figures, the CTA curves that are plotted are actually based on the margins instead of the radii since they are directly proportional (meaning we only estimated margins instead of radii), hence we use them interchangeably in our analysis.
 To explain how to read one of our figures, we can take for example Figure~\ref{fig:discrete_sigma}.
-We have six comparisons, in the first three comparisons (on top), the certified radius that was chosen is the first radius (Equation~\eqref{eq:first-radius}), and it was estimated for all examples of the test set in order to obtain the CTA.
+We have six comparisons, in the first three comparisons (on top), the certified radius that was chosen is the first radius (Equation~\eqref{eq:first-radius}), and it was estimated for all examples of the test set in order to obtain the CTA curve (same thing goes for the second radius on the bottom).
 As explained in this Section~\ref{subsec:practical-calculation-of-confidence-interval}, we can estimate the certified radius using the Bonferroni correction alongside an exact one-sided confidence interval (as outlined in Algorithm~\ref{alg:bonferroni}).
 The Bonferroni approach is agnostic to the type of confidence interval being used, which leaves us with the choice of the confidence interval that is indicated in the legend of the plot after a plus sign.
-
+The `Ours' keyword in the legend indicates that the radius was estimated using the methods that we have explained in Section~\ref{sec:discrete} and Section~\ref{sec:continuous}.
+In the continuous case, we have just outlined a high-level approach without specifying which confidence interval to use, which means that our approach (like the Bonferroni approach) is agnostic to the choice of confidence interval.
+In this paper, we mentioned two methods to obtain confidence intervals for the mean of a continuous random variable: the empirical Bernstein inequality (Proposition~\ref{prop:empirical-bernstein-inequality}) which we refer to in the legends as `Bernstein' and the betting confidence sequence (Proposition~\ref{prop:confidence-sequence}) which we refer to in the legends as `CS'.
+This leaves us with a maximum of $2\times2$ possibles combinations.
 
 Starting with the discrete case, there are two main hyperparameters that influence the shape of the CTA curve: the number of samples $n$ and the standard deviation $\sigma$.
 The easiest hyperparameter dependence to analyse is the number of samples $n$.
