@@ -114,12 +114,14 @@ As a result, we can write our first certified radius for a smoothed classifier a
     R_1(\hat{F},x) \coloneqq \frac{M(\hat{F},x)}{\sqrt{2}L(f)}\label{eq:first-radius}
 \end{equation}
 
+Thoughout this paper, when we mention the term \textit{first radius}, we refer to the certified radius above.
+
 \subsection{Certified Radius and Noise Magnitude}\label{subsec:certified-radius-and-noise-magnitude}
 In the discrete case, Cohen et al.
 proved a model-agnostic certifiably tight radius for randomized smoothing, meaning there exist adversarial examples at distances arbitrarily close to the ball centered at $x$ with their radius.
 The method scales to large networks and high-dimensional data, as it only requires evaluating the base classifier on noisy samples.
 
-Formally, their certified radius is defined as:
+Formally, their certified radius (which we call the \textit{second radius}) is defined as:
 \begin{equation}
     R_2(\hat{F},x) \coloneqq \frac{\sigma}{2}M(\Phi^{-1}\circ\hat{F},x)=\frac{\sigma}{2}\left(\Phi^{-1}(\hat{F}(x)_{y})-\Phi^{-1}(\max_{i \neq y}\{ \hat{F}(x)_i \})\right),\label{eq:second-radius}
 \end{equation}

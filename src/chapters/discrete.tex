@@ -1,8 +1,8 @@
 \section{Certified Radius Estimation in the Discrete Case}\label{sec:discrete}
 
-\subsection{Definitions and Notations}
-Following the same footsteps in , we have a vector of counts $X = (X_1, \ldots, X_m)$ that follows a multinomial distribution with parameters $n$ and $p = (p_1, \ldots, p_m)$, where $n$ is the number of samples (which is fixed for our purposes) and $p_k = \mathbb{P}(f(x + \epsilon) = k)$ are the sole unknown parameters.
-In general, we wish to estimate a lower confidence bound (the development for an upper confidence bound is identical but uninteresting for our intents given the reasons we layed out in the previous section) for a real-valued function $\theta\coloneqq g(p)$ of the multinomial parameter $p$.
+\subsection{Definitions and Notations}\label{subsec:definitions-and-notations}
+Following the same footsteps in~\citep{batterton2021confidence}, we have a vector of counts $X = (X_1, \ldots, X_m)$ that follows a multinomial distribution with parameters $n$ and $p = (p_1, \ldots, p_m)$, where $n$ is the number of samples (which is fixed for our purposes) and $p_k = \mathbb{P}(f(x + \epsilon) = k)$ are the sole unknown parameters.
+In general, we wish to estimate a lower confidence bound (the development for an upper confidence bound is identical but uninteresting for our intents given the reasons we layed out in section~\ref{subsec:monte-carlo-approximation-and-conservative-confidence-intervals}) for a real-valued function $\theta\coloneqq g(p)$ of the multinomial parameter $p$.
 We assume that the multinomial parameter $p$ lives in a constraint space denoted as $\chi^{m-1}$ which is a subset of $\Delta^{m-1}$.
 We also denote by $\chi^{m-1}_n\coloneqq\chi^{m-1}\cap\Delta^{m-1}_n$ the discrete constraint space, i.e. the values that can taken empirically by $p$ given $n$ trials.
 
@@ -58,9 +58,9 @@ Computing $\Pi(L)$ demands that we solve the following optimization problem:
 \end{equation}
 
 This optimization problem~\eqref{eq:Pi-optimization} falls under the category of \textbf{signomial optimization problems}, a kind of optimization problems that are extensively studied in the literature.
-Details on how to solve the signomial optimization problem can be found in Appendix~\ref{sec:signomial-optimization}.
+Details on what signomial optimization problems are can be found in Appendix~\ref{sec:signomial-programming}.
 The high-level algorithm for finding $\underline{\Hat{\theta}}$ is given in Algorithm~\ref{alg:first-margin-estimation}.
-\begin{algorithm}[h]
+\begin{algorithm}[htbp]
     \DontPrintSemicolon % Removes semicolons at the end of lines
     \KwIn{A vector of counts $X$, a tiny threshold $\epsilon>0$ and a routine \texttt{SolveSignomial(L)} that solves the signomial optimization problem~\eqref{eq:Pi-optimization} for any $L\in[-1,1]$}
     \KwOut{The lower confidence bound $\underline{\Hat{\theta}}$ at confidence level $1-\alpha$}
@@ -87,11 +87,12 @@ Solving signomial problems can be time-consuming, this is the reason why the nex
 \end{lemma}
 
 It is worth noting that this lemma holds true for both first and second radii.
-The lemma above has the following implication: if we suboptimally solve the optimization problem~\eqref{eq:Pi-optimization} for a given $L\in\Theta$, and if we find a value that is less than $1-\alpha$, then the lower confidence bound we are looking for resides on the right side of $L$, which narrows down the search space to the left subspace of $L$.
+The lemma above has the following implication: if we suboptimally solve the optimization problem~\eqref{eq:Pi-optimization} for a given $L\in\Theta$, and if we find a value that is less than $1-\alpha$, then the lower confidence bound we are looking for resides on the left side of $L$, which narrows down the search space to the left subspace of $L$.
 In the first iterations of the binary search, our candidate $L$ is likely to be far away from the optimal solution $\underline{\Hat{\theta}}$, which means that solutions of the optimization problem~\eqref{eq:Pi-optimization} are likely to correspond to values that are less $1-\alpha$, therefore we can get away with suboptimally solving the problem.
-In practice, bayesian optimization algorithms often work well and are reasonably fast for the problem~\eqref{eq:Pi-optimization}, and we implement an early stopping rule to stop optimizing further if we fall below $1-\alpha$.
+In practice, bayesian optimization algorithms often work well and are reasonably fast for the problem~\eqref{eq:Pi-optimization}.
+We can also implement an early stopping rule, as another optimization trick, to stop optimizing further if we fall below $1-\alpha$.
 The final algorithm is summarized in Algorithm~\ref{alg:first-margin-estimation-fast}.
-\begin{algorithm}[h]
+\begin{algorithm}[htbp]
     \DontPrintSemicolon % Removes semicolons at the end of lines
     \KwIn{A vector of counts $X$, a tiny threshold $\epsilon>0$, a routine \texttt{SolveSignomial(L)} that solves the signomial optimization problem~\eqref{eq:Pi-optimization} for any $L\in[-1,1]$ and another routine \texttt{FastSolveSignomial(L)} that does the same thing but in a faster and possibly suboptimal way}
     \KwOut{The lower confidence bound $\underline{\Hat{\theta}}$ at confidence level $1-\alpha$}
@@ -120,7 +121,7 @@ The final algorithm is summarized in Algorithm~\ref{alg:first-margin-estimation-
 \subsection{Second Radius Estimation}\label{subsec:second-radius-estimation}
 In the same way as the last section, we need to solve the following optimization problem
 \begin{equation}
-    \inf_{\substack{q\in\Delta^{2}\\\Phi^{-1}(q_1)-\Phi^{-1}(q_2)\leq L}}\Pi(\Tilde{\theta}|q).\label{eq:non-signomial-optimization}
+    \inf_{\substack{q\in\chi^{2}\\\Phi^{-1}(q_1)-\Phi^{-1}(q_2)\leq L}}\Pi(\Tilde{\theta}|q).\label{eq:non-signomial-optimization}
 \end{equation}
 
 Since $\Phi^{-1}$ is not a posynomial nor a signomial function, the optimization problem~\eqref{eq:non-signomial-optimization} cannot be classified as a signomial optimization problem, due to the non-signomial constraint $\Phi^{-1}(q_1)-\Phi^{-1}(q_2)\leq L$.
@@ -136,17 +137,17 @@ To circumvent this problem, the following lemma shows that we can substitue the 
 This lemma guarantees that replacing $\Phi^{-1}$ with its taylor series approximation preserves the conservativeness of the certified radius.
 The new margin has the advantage that the following optimization problem is a signomial optimization problem
 \begin{equation}
-    \inf_{\substack{q\in\Delta^{2}\\\Phi^{-1}_M(q_1)-\Phi^{-1}_M(q_2)\leq L}}\Pi(\Tilde{\theta}|q),\quad\text{ with }\quad\Pi(\Tilde{\theta}|q)= \sum_{\substack{x\in\Omega^{2}_n\\\Phi^{-1}_M\left(\frac{x_1}{n}\right)-\Phi^{-1}_M\left(\frac{x_2}{n}\right)\leq\Tilde{\theta}}}\binom{n}{x}q^x.\label{eq:approximated-signomial-optimization}
+    \inf_{\substack{q\in\chi^{2}\\\Phi^{-1}_M(q_1)-\Phi^{-1}_M(q_2)\leq L}}\Pi(\Tilde{\theta}|q),\quad\text{ with }\quad\Pi(\Tilde{\theta}|q)= \sum_{\substack{x\in\Omega^{2}_n\\\Phi^{-1}_M\left(\frac{x_1}{n}\right)-\Phi^{-1}_M\left(\frac{x_2}{n}\right)\leq\Tilde{\theta}}}\binom{n}{x}q^x.\label{eq:approximated-signomial-optimization}
 \end{equation}
 
 In the same manner as before, in the first iterations of binary search we can suboptimally solve this optimization problem using techniques such as bayesian optimization.
 
 A disadvantage of the taylor series approximation is that the lemma assumes that $p_1\geq1/2$ to maintain the conservativeness of the certified radius.
 To get around this potentially untrue hypothesis, we can test it using the one-sided Clopper-Pearson interval.
-If the test succeeds, we proceed with the taylor series approximation.
+If the test succeeds, we proceed with the taylor series approximation and solve the signomial optimization problem~\eqref{eq:approximated-signomial-optimization} with $\chi^2=\Delta^2\cap\{q:q_1\geq1/2\}$.
 If not, as a fallback, we use the standard Clopper-Pearson interval with Bonferroni correction to estimate the certified radius.
 This approach is summarized in Algorithm~\ref{alg:second-margin-estimation}.
-\begin{algorithm}[h]
+\begin{algorithm}[htbp]
     \DontPrintSemicolon % Removes semicolons at the end of lines
     \KwIn{A vector of counts $X$, a tiny threshold $\epsilon>0$, a routine \texttt{SolveSignomial(L)} that solves the signomial optimization problem~\eqref{eq:approximated-signomial-optimization} for any $L\in[-1,1]$ and another routine \texttt{FastSolveSignomial(L)} that does the same thing but in a faster and possibly suboptimal way}
     \KwOut{The lower confidence bound $\underline{\Hat{\theta}}$ at confidence level $1-\alpha$}
@@ -156,7 +157,7 @@ This approach is summarized in Algorithm~\ref{alg:second-margin-estimation}.
         The rest is similar to Algorithm~\ref{alg:first-margin-estimation-fast} while replacing $\alpha$ with $\frac{\alpha}{2}$\;
     }
     \Else{
-        Compute the lower confidence bound using the standard Bonferonni algorithm (Algorithm~\ref{alg:bonferroni})\;
+        Compute the lower confidence bound using the standard Bonferonni algorithm (Equation~\eqref{eq:clopper-pearson})\;
     }
 %    \KwRet{$\text{left}$}
     \caption{Second Margin Estimation in the Discrete Case}\label{alg:second-margin-estimation}

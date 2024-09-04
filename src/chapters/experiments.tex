@@ -39,7 +39,7 @@ This relationship allows us to construct a one-sided confidence interval for the
 \subsection{Results}\label{subsec:results}
 
 To compare our new radius estimation methods with the standard approaches, we run our experiments on the CIFAR-10 dataset.
-Results for the Imagenet dataset can be found in Appendix \ref{app:imagenet-results}.
+Results for the Imagenet dataset can be found in Appendix~\ref{sec:more-experimental-results}.
 The failure rate $\alpha$ is chosen to be $0.001$ throughout all the experiments.
 The base classifier $F$ is the same 110-layer residual network from Cohen et al, trained using Gaussian noise data augmentation, such that the standard deviation $\sigma$ of the Gaussian noise used during training is the same one used when smoothing the base classifier.
 In all the figures, we compare the margins instead of the radii since they are directly proportional, and we use them interchangeably in our analysis.
