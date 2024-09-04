@@ -27,8 +27,10 @@
 \usepackage{bbm}
 \usepackage{multirow}
 %\usepackage{natbib} % Added natbib package
-\usepackage[authoryear]{natbib}
-
+\usepackage[square,authoryear]{natbib}
+% Redefine \citet to use parentheses instead of brackets
+%\setcitestyle{square} % For \citep
+%\setcitestyle{round,aysep={}}
 % Custom formatting to move the caption below the algorithm
 %\makeatletter
 %\renewcommand{\@algocf@capt@plain}{bottom}
@@ -49,8 +51,8 @@
 \title{Optimal Certified Radius Estimation in Randomized Smoothing
 %%%% Cite as
 %%%% Update your official citation here when published 
-\thanks{\textit{\underline{Citation}}:
-\textbf{Authors. Title. Pages.... DOI:000000/11111.}}
+\thanks{
+Last updated on \today.}
 }
 
 \author{

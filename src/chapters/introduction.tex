@@ -1,51 +1,51 @@
 \section{Introduction}\label{sec:introduction}
-The rapid advancement of deep neural networks has revolutionized numerous fields, from computer vision~\cite{krizhevsky2012imagenet} to natural language processing~\cite{devlin2018bert}.
-These powerful models have demonstrated an unprecedented ability to learn complex patterns from data, leading to remarkable performance in a wide array of tasks~\cite{lecun2015deep}.
-As deep learning continues to permeate various aspects of our lives, from smartphone applications to autonomous vehicles, the integration of these models into critical systems has become increasingly commonplace~\cite{goodfellow2016deep}.
+The rapid advancement of deep neural networks has revolutionized numerous fields, from computer vision~\citep{krizhevsky2012imagenet} to natural language processing~\citep{devlin2018bert}.
+These powerful models have demonstrated an unprecedented ability to learn complex patterns from data, leading to remarkable performance in a wide array of tasks~\citep{lecun2015deep}.
+As deep learning continues to permeate various aspects of our lives, from smartphone applications to autonomous vehicles, the integration of these models into critical systems has become increasingly commonplace~\citep{goodfellow2016deep}.
 
-However, this widespread adoption has brought to light significant concerns regarding the security and reliability of neural networks~\cite{biggio2018wild}.
+However, this widespread adoption has brought to light significant concerns regarding the security and reliability of neural networks~\citep{biggio2018wild}.
 As these models become more deeply embedded in our technological infrastructure, addressing their vulnerabilities has become a matter of paramount importance.
-The field of adversarial machine learning has emerged as a crucial area of research, focusing on understanding and mitigating the susceptibility of neural networks to malicious attacks~\cite{vorobeychik2018adversarial}.
+The field of adversarial machine learning has emerged as a crucial area of research, focusing on understanding and mitigating the susceptibility of neural networks to malicious attacks~\citep{vorobeychik2018adversarial}.
 
-One of the primary challenges in neural network security is adversarial robustness~\cite{szegedy2013intriguing}.
-Adversarial examples, which are imperceptibly perturbed inputs designed to fool state-of-the-art models, have been shown to pose significant threats to deployed systems~\cite{goodfellow2014explaining}.
-These vulnerabilities have been demonstrated across various domains, including image classification~\cite{carlini2017towards}, speech recognition~\cite{carlini2018audio}, and even physical-world applications~\cite{kurakin2016adversarial}.
-The ease with which these adversarial examples can be generated and their transferability across different models have raised serious concerns about the reliability of neural networks in security-sensitive applications~\cite{papernot2016transferability}.
+One of the primary challenges in neural network security is adversarial robustness~\citep{szegedy2013intriguing}.
+Adversarial examples, which are imperceptibly perturbed inputs designed to fool state-of-the-art models, have been shown to pose significant threats to deployed systems~\citep{goodfellow2014explaining}.
+These vulnerabilities have been demonstrated across various domains, including image classification~\citep{carlini2017towards}, speech recognition~\citep{carlini2018audio}, and even physical-world applications~\citep{kurakin2016adversarial}.
+The ease with which these adversarial examples can be generated and their transferability across different models have raised serious concerns about the reliability of neural networks in security-sensitive applications~\citep{papernot2016transferability}.
 
 The implications of such vulnerabilities extend far beyond academic interest.
-In safety-critical applications like autonomous vehicles~\cite{eykholt2018robust} or medical diagnosis systems~\cite{finlayson2019adversarial}, adversarial attacks could lead to catastrophic consequences.
+In safety-critical applications like autonomous vehicles~\citep{eykholt2018robust} or medical diagnosis systems~\citep{finlayson2019adversarial}, adversarial attacks could lead to catastrophic consequences.
 For instance, subtle perturbations to road signs could cause an autonomous vehicle to misinterpret critical signals, potentially leading to accidents.
 Similarly, in healthcare, adversarial manipulations of medical images could result in misdiagnosis, putting patients' lives at risk.
-Moreover, as machine learning models become more prevalent in security-sensitive areas such as malware detection~\cite{grosse2017adversarial} and biometric authentication~\cite{sharif2016accessorize}, the potential for malicious exploitation grows exponentially.
+Moreover, as machine learning models become more prevalent in security-sensitive areas such as malware detection~\citep{grosse2017adversarial} and biometric authentication~\citep{sharif2016accessorize}, the potential for malicious exploitation grows exponentially.
 
 The financial sector is another domain where the security of neural networks is of utmost importance.
-Machine learning models are increasingly being used for fraud detection, credit scoring, and algorithmic trading~\cite{gu2018adversarial}.
+Machine learning models are increasingly being used for fraud detection, credit scoring, and algorithmic trading~\citep{gu2018adversarial}.
 Adversarial attacks in these contexts could lead to significant financial losses and erode trust in financial institutions.
-The potential for market manipulation through adversarial techniques poses a serious threat to the stability of financial systems~\cite{li2020adversarial}.
+The potential for market manipulation through adversarial techniques poses a serious threat to the stability of financial systems~\citep{li2020adversarial}.
 
-Efforts to address these security challenges have given rise to a burgeoning field of research focused on developing robust machine learning models~\cite{madry2017towards}.
-Defensive strategies range from adversarial training~\cite{tramer2017ensemble} to input preprocessing techniques~\cite{guo2017countering} and detection methods~\cite{metzen2017detecting}.
+Efforts to address these security challenges have given rise to a burgeoning field of research focused on developing robust machine learning models~\citep{madry2017towards}.
+Defensive strategies range from adversarial training~\citep{tramer2017ensemble} to input preprocessing techniques~\citep{guo2017countering} and detection methods~\citep{metzen2017detecting}.
 Adversarial training, which involves augmenting the training data with adversarial examples, has shown promise in improving model robustness.
-However, this approach often comes at the cost of increased computational complexity and potential degradation of performance on clean data~\cite{tsipras2018robustness}.
+However, this approach often comes at the cost of increased computational complexity and potential degradation of performance on clean data~\citep{tsipras2018robustness}.
 Input preprocessing techniques aim to remove adversarial perturbations before feeding the data into the neural network.
-These methods include various image transformations, such as bit-depth reduction, JPEG compression, and total variation minimization~\cite{xu2017feature}.
+These methods include various image transformations, such as bit-depth reduction, JPEG compression, and total variation minimization~\citep{xu2017feature}.
 While these approaches can be effective against certain types of attacks, they often struggle to generalize to more sophisticated adversarial perturbations.
 
 Detection methods, on the other hand, focus on identifying adversarial examples at test time.
-These approaches leverage various statistical properties of adversarial examples or employ separate neural networks trained to distinguish between clean and adversarial inputs~\cite{meng2017magnet}.
-However, many of these detection methods have been shown to be vulnerable to adaptive attacks, where the adversary is aware of the defense mechanism and can craft adversarial examples that evade detection~\cite{athalye2018obfuscated}.
+These approaches leverage various statistical properties of adversarial examples or employ separate neural networks trained to distinguish between clean and adversarial inputs~\citep{meng2017magnet}.
+However, many of these detection methods have been shown to be vulnerable to adaptive attacks, where the adversary is aware of the defense mechanism and can craft adversarial examples that evade detection~\citep{athalye2018obfuscated}.
 
 The limitations of these empirical defense strategies have highlighted the need for more principled approaches to neural network security.
-In response to these challenges, recent years have seen a growing interest in certifiable robustness guarantees for neural networks~\cite{cohen2019certified}.
+In response to these challenges, recent years have seen a growing interest in certifiable robustness guarantees for neural networks~\citep{cohen2019certified}.
 These approaches aim to provide formal assurances about a model's behavior under bounded perturbations, offering a rigorous foundation for building secure AI systems.
 Certifiable robustness techniques can be broadly categorized into two main approaches: exact methods and relaxation-based methods.
-Exact methods, such as Mixed Integer Linear Programming (MILP)~\cite{tjeng2017evaluating} and Satisfiability Modulo Theories (SMT)~\cite{katz2017reluplex}, provide precise robustness guarantees but are computationally expensive and scale poorly to large neural networks.
+Exact methods, such as Mixed Integer Linear Programming (MILP)~\citep{tjeng2017evaluating} and Satisfiability Modulo Theories (SMT)~\citep{katz2017reluplex}, provide precise robustness guarantees but are computationally expensive and scale poorly to large neural networks.
 Relaxation-based methods, on the other hand, offer more scalable solutions by approximating the network's behavior.
-These include techniques based on abstract interpretation~\cite{gehr2018ai2}, semidefinite programming~\cite{raghunathan2018semidefinite}, and linear programming~\cite{wong2018provable}.
+These include techniques based on abstract interpretation~\citep{gehr2018ai2}, semidefinite programming~\citep{raghunathan2018semidefinite}, and linear programming~\citep{wong2018provable}.
 
 While these certifiable robustness techniques have made significant progress, they often struggle to scale to state-of-the-art neural network architectures and typically provide overly conservative bounds.
 This has led to a growing interest in probabilistic certification methods, which offer a balance between scalability and rigorous guarantees.
-Among these probabilistic certification methods, randomized smoothing has emerged as a particularly promising technique for achieving scalable and flexible robustness certification~\cite{lecuyer2019certified}.
+Among these probabilistic certification methods, randomized smoothing has emerged as a particularly promising technique for achieving scalable and flexible robustness certification~\citep{cohen2019certified}.
 This approach involves adding random noise to the input and using the probabilistic properties of the smoothed classifier to derive robustness guarantees.
 Randomized smoothing has gained significant attention due to its ability to scale to large neural networks and its applicability to various types of data and model architectures.
 
@@ -56,10 +56,9 @@ While significant progress has been made in understanding and mitigating these v
 The development of robust and secure neural networks requires a multifaceted approach, combining empirical defenses, formal verification techniques, and novel architectural designs.
 As we move forward, it is crucial to not only focus on defending against known attack methods but also to anticipate and prepare for future threats.
 This necessitates a proactive approach to security, integrating robustness considerations into the very foundations of neural network design and training.
-In the following sections, we will delve deeper into the concept of randomized smoothing, exploring its theoretical foundations, practical implementations, and potential applications in various domains.
-We will examine how this technique fits into the broader landscape of adversarial machine learning and discuss its strengths and limitations in providing certifiable robustness guarantees for neural networks.
+In the following sections, we will delve deeper into the concept of randomized smoothing, exploring its theoretical foundations, practical implementations, and its certifiable robustness guarantees for neural networks.
 
-This paper is structured as follows:
+In summary, this paper is structured as follows:
 \begin{itemize}
     \item Section~\ref{sec:background-&-related-work} presents the theoretical foundations of randomized smoothing, alongside notations and definitions we will use throughout the paper.
     \item Section~\ref{sec:problem-formulation} defines precisely the problem we will address in this paper, and divides into two subproblems: the discrete case and the continuous case.
