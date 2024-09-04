@@ -1,37 +1,37 @@
 \section{Certified Radius Estimation in the Discrete Case}\label{sec:continuous}
 
-\subsection{Estimating By Betting}\label{subsec:estimating-by-betting}
-In , Ramdas et al introduced a novel approach to obtain confidence intervals with exact coverage for the mean of a bounded random variable.
-Their method is based on creating confidence sequences which are stronger than confidence intervals in the sense that while a confidence interval provides a range estimate for a parameter at a fixed sample size, a confidence sequence offers a sequence of intervals that are valid at any stopping time, providing continuous monitoring capabilities.
+\subsection{Estimating By Betting (Background)}\label{subsec:estimating-by-betting}
+\cite{smith2022estimating} introduced a novel approach to obtain confidence intervals with exact coverage for the mean of a bounded random variable.
+Their method is based on creating confidence sequences which are stronger than confidence intervals in the sense that while a confidence interval provides a range estimate for a parameter at a fixed sample size, a confidence sequence (CS) offers a sequence of intervals that are valid at any stopping time, providing continuous monitoring capabilities.
 Their new method shows significant improvements over past works including empirical Bernstein inequality in terms of interval width.
 
 Full details about their work is outside the scope of this report.
 The interested reader is encouraged to consult the original paper to learn more about their method.
 But for summary, the intuition behind the new method is rooted in a betting framework.
 The approach can be conceptualized as a game between a statistician and nature.
-For each potential mean value $m$ in the interval $[0,1]$, a separate game is established.
-The statistician's strategy involves making bets on future observations, with the goal of accumulating wealth if the true mean differs from $m$.
-The confidence set at any time $t$ consists of all values $m$ for which the statistician's wealth has not exceeded a certain threshold (specifically, $1/\alpha$ for a $1-\alpha$ confidence level).
+For each potential mean value $\mu$ in the interval $[0,1]$, a separate game is established.
+The statistician's strategy involves making bets on future observations, with the goal of accumulating wealth if the true mean differs from $\mu$.
+The confidence set at any time $t$ consists of all values $\mu$ for which the statistician's wealth has not exceeded a certain threshold (specifically, $1/\alpha$ for a $1-\alpha$ confidence level).
 
 The authors frame this approach within the context of supermartingale theory, connecting it to existing work in nonparametric concentration and estimation.
 They also provide a plethora of betting strategies that range from simple to implement but overly conservative strategies to tight but inefficient ones.
 
 For the intents of this report, we will use the simplest confidence sequence mentioned in their paper, namely, the following, as we leave the exploration of tighter confidence sequences for future work.
-\begin{proposition}\label{prop:confidence-sequence}
-    Suppose $(X_t)_{t=1}^\infty \sim P$ for some $P \in \mathcal{P}$. For any $(0,1)$-valued predictable $(\lambda_t)_{t=1}^\infty$,
+
+\begin{proposition}[\cite{smith2022estimating}]\label{prop:confidence-sequence}
+    Suppose we have a possibly infinite sequence of independent and identically distributed random variables $(X_t)_{t=1}^\infty$. Then,
     \[
         C_t^{\text{PrPI-EB}} \coloneqq \left( \frac{\sum_{i=1}^t \lambda_i X_i}{\sum_{i=1}^t \lambda_i}\pm \sqrt{\frac{2\log(2/\alpha) + \sum_{i=1}^t v_i \psi_e (\lambda_i)}{\sum_{i=1}^t \lambda_i}} \right)
     \]
-    forms a $(1-\alpha)$-CS for $\mu$, as does its running intersection, $\bigcap_{i \leq t} C_i^{\text{PrPI-EB}}$.
-
-    In particular, we recommend the predictable plug-in $(\lambda_t^{\text{PrPI-EB}})_{t=1}^\infty$ given by
-    \[
-        \lambda_t^{\text{PrPI-EB}} \coloneqq \sqrt{\frac{2\log(2/\alpha)}{\hat{\sigma}_{t-1}^2 \log(1 + t)}} \wedge 1, \quad \hat{\sigma}_t^2 \coloneqq \frac{1}{4} + \frac{\sum_{i=1}^t (X_i - \hat{\mu}_i)^2}{t + 1}, \quad \hat{\mu}_t \coloneqq \frac{1}{2} + \frac{\sum_{i=1}^t X_i}{t + 1}
-    \]
-    where $(15)$
+    forms a $(1-\alpha)$-CS for $\mu$, as does its running intersection, $\bigcap_{i \leq t} C_i^{\text{PrPI-EB}}$, where
+    \begin{gather*}
+        \lambda_t^{\text{PrPI-EB}} \coloneqq \sqrt{\frac{2\log(2/\alpha)}{\hat{\sigma}_{t-1}^2 t\log(1 + t)}} \wedge\frac{1}{2}, \quad \hat{\sigma}_t^2 \coloneqq \frac{\frac{1}{4}+\sum_{i=1}^t (X_i - \hat{\mu}_i)^2}{t + 1}, \quad \hat{\mu}_t \coloneqq \frac{\frac{1}{2}+\sum_{i=1}^t X_i}{t + 1},\\
+        \psi_e(\lambda) \coloneqq -\frac{\log(1-\lambda)+\lambda}{4},\quad v_i \coloneqq 4\left( X_i - \hat{\mu}_i \right)^2.
+    \end{gather*}
 \end{proposition}
+It is also worth noting the CS above is symmetric with respect to coverage, which means that the one-sided version of the CS (if we are interested in only lower bounds or upper bounds) is obtained by simply plugging in $\frac{\alpha}{2}$ instead of $\alpha$.
 
-While the first article only showed empirically the improvements in terms of interval width over existing work, Ramdas et al later proved in that the asymptotic width of their confidence sequence not only is tighter than empirical Bernstein's, but also achieves the width of the theoretical Bernstein's inequality in both the first-order and second-order limiting terms.
+While the first article only showed empirically the improvements in terms of interval width over existing work,~\cite{shekhar2023confidence} later proved in that the asymptotic width of their confidence sequence not only is tighter than empirical Bernstein's, but also achieves the width of the theoretical Bernstein's inequality in both the first-order and second-order limiting terms.
 Formally, the width of the (one-sided) theoretical Bernstein's inequality, which we consider to be the gold standard, is given by
 \[
     w_n^{(TB)} = \sigma \sqrt{\frac{2\log(2/\alpha)}{n}} + \frac{2\log(1/\alpha)}{3n}.
@@ -40,7 +40,7 @@ The width of the empirical Bernstein's inequality is given by
 \[
     w_n^{(EB)} = \sigma \sqrt{\frac{2\log(2/\alpha)}{n}} + \frac{7\log(2/\alpha)}{3(n-1)}.
 \]
-Ramdas et al also proved that the width of their confidence sequence matches that of the theoretical Bernstein's inequality at least up to the second-order limiting term:
+\cite{shekhar2023confidence} proved that the width of their confidence sequence matches that of the theoretical Bernstein's inequality at least up to the second-order limiting term:
 \[
     w_n^{\text{PrPI-EB}} = \sigma \sqrt{\frac{2\log(2/\alpha)}{n}} + \frac{2\log(1/\alpha)}{3n}+{o}\left( \frac{1}{n} \right).
 \]
@@ -48,25 +48,27 @@ Ramdas et al also proved that the width of their confidence sequence matches tha
 \subsection{First Radius Estimation}\label{subsec:first-radius-estimation-continuous}
 To recall the context from section~\ref{subsubsec:continuous-case}, to certify our smoothed classifier, we concatenate its predictions in the form of a $n \times m$ matrix $X$, such that $n$ is the number of inferences and $m$ is the number of classes.
 Each column of the matrix $X$ corresponds to a class label, and each row of the matrix $X$ corresponds to an inference.
-Following the same notations as in the last section, the first and second columns correspond respectively to the true label and the runner-up class.
+Following the same notations in section~\ref{subsec:first-radius-estimation}, the first column corresponds to the true label.
 
-In the case of the first margin, the quantity we want to estimate is a lower confidence bound on the true mean of the differences between the two first columns of $X$, i.e $X^{1}-X^{2}$.
-For this reason, define $Z\coloneqq X^{1}-X^{2}$.
-There are two approaches to obtain a lower bound, with confidence level $1-\alpha$, on the mean of $Z$, denoted as $\Bar{Z}$.
-The first standard approach is to use Bonferroni correction alongside an exact one-sided confidence interval, meaning we use a one-sided confidence interval to obtain a lower bound on the mean of $X^1$ with level $\frac{\alpha}{2}$ and an upper confidence bound on the mean of $X^2$ with level $\frac{\alpha}{2}$.
-The lower confidence bound on $\Bar{Z}$ is then the difference of these two bounds.
+In the case of the first margin, define the vector $Z\coloneqq X^{1}-\max_{j \neq 1} X^{j}$, where the operations are defined coordinate-wise (i.e. $Z_i = X^{1}_i - \max_{i \neq 1} X^{j}_i$).
+We can consider each coordinate of the vector $Z$ as a realization of the random variable that is the first margin.
+Therefore, the ``ideal'' quantity we want to estimate is the mean of $Z$, denoted as $\Bar{Z}$.
+In a conservative fashion, we will estimate a lower confidence bound on $\Bar{Z}$ with confidence level $1-\alpha$.
 
-Our second approach is to estimate the lower confidence bound directly by first normalizing $Z$ to make sure its values are in the interval $[0,1]$, then we apply a one-sided confidence interval with level $\alpha$, which gives us directly the lower confidence bound.
+There are two approaches to obtain this lower bound.
+The first standard approach is to use Bonferroni correction (Algorithm~\ref{alg:bonferroni}) alongside an exact one-sided confidence interval (either empirical Bernstein's inequality in Proposition~\ref{prop:empirical-bernstein-inequality}, or the confidence sequence in Proposition~\ref{prop:confidence-sequence}).
+Our second approach is to estimate the lower confidence bound directly by first normalizing $Z$ to make sure its values are in the interval $[0,1]$, then we apply a one-sided confidence interval with level $\alpha$ where the coodinates of $Z$ serve as samples, then we invert the normalization, which gives us directly the lower confidence bound.
 
 \subsection{Second Radius Estimation}\label{subsec:second-radius-estimation-continuous}
-In the case of the second margin, our vector of interest in $Z\coloneqq\Phi^{-1}(X^1)-\Phi^{-1}(X^2)$, where the function $\Phi^{-1}$ is applied element-wise on the coordinates of the vector.
+In the case of the second margin, our vector of interest in $Z\coloneqq\Phi^{-1}(X^1)-\max_{j \neq 1}\Phi^{-1}(X^j)$, where the function $\Phi^{-1}$ is applied element-wise on the coordinates of the vectors as before.
 A main issue that stops us from carrying out the same procedure as in the previous section is the unboundedness of $\Phi^{-1}$, which implies that we cannot apply either Bernstein's inequality or the plug-in Bernstein's confidence sequence, as they both assume a bounded random variable.
 
-To get around this unboundedness problem, the standard approach is the same as before which is to estimate confidence bounds on both the mean of $X^1$ and $X^2$ with level $\frac{\alpha}{2}$, and then applying the function $\Phi^{-1}$ on each of these bounds and substracting them.
+To get around this unboundedness problem, the standard approach is the same Bonferroni approach in Algorithm~\ref{alg:bonferroni} which is to estimate confidence bounds on all the classes with level $\frac{\alpha}{m}$, and then plugging them in to obtain the lower confidence bound on $\Bar{Z}$.
+The reason why this approach is intuitive is that we know beforehand the output for each class is bounded in the interval $[0,1]$.
 
-Our approach, however, is more direct; we reuse our lemma, as it produces a conservative lower bound on the margin such that the function $\Phi^{-1}$ is replaced by its taylor series approximation which is on the contrary bounded on $[0,1]$.
-If we define $Z_M\coloneqq\Phi^{-1}_M(X^1)-\Phi^{-1}_M(X^2)$, then $Z_M$ is a bounded random variable.
+Our approach, however, is more direct; we reuse our lemma~\ref{lemma:approximation}, as it produces a conservative lower bound on the margin such that the function $\Phi^{-1}$ is replaced by its taylor series approximation which is on the contrary bounded on $[0,1]$.
+If we define $Z_M\coloneqq\Phi^{-1}_M(X^1)-\max_{j \neq 1}\Phi^{-1}_M(X^j)$, then $Z_M$ is a bounded random variable.
 Thanks to the lemma, a lower confidence bound with level $\alpha$ on the vector $Z_M$ is also a lower confidence bound with level $\alpha$ on $Z$.
-Since our approximation is based on the supposition that $\Bar{X^1}\geq\frac{1}{2}$, we can split our procedure into two steps (like in Algorithm~\ref{alg:second-margin-estimation}): first, we test our hypothesis at level $\frac{\alpha}{2}$, then we estimate the margin using the taylor series approximation if the test succeeds, else we fall back on the standard method based on Bonferroni correction.
+Since our approximation is based on the supposition that $\Bar{X^1}\geq\frac{1}{2}$, we can split our procedure into two steps (exactly like in Algorithm~\ref{alg:second-margin-estimation}): first, we test our hypothesis at level $\frac{\alpha}{2}$, then we estimate the margin using the taylor series approximation at level $\frac{\alpha}{2}$ if the test succeeds, else we fall back on the standard method based on Bonferroni correction.
 
 
