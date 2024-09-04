@@ -52,13 +52,13 @@ It is also worth noting that the second margin takes much more samples to conver
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/discrete_num}
-    \caption{Caption for the figure.}
+    \caption{Certified accuracies' comparison on the CIFAR-10 dataset in the discrete case for different numbers of samples (displayed on the columns) with $\sigma = 0.12$. CP + Bonferroni means Clopper-Pearson interval with Bonferroni correction, and dichotomy means our new approach in section~\ref{sec:discrete}. The first row compares the certified accuracies using the first margin and the second row compares the certified accuracies using the second margin.}
     \label{fig:discrete_num}
 \end{figure}
 
 \begin{table}[htbp]
     \centering
-    \caption{Certified accuracy for different values of $r$ on the Second dataset.}
+    \caption{Certified accuracy using the second margin on the CIFAR-10 dataset in the discrete case for different values of radius $r$ with a sample size of $100$ and a standard deviation $\sigma = 0.12$.}
     \label{tab:simplified-certified-accuracy}
     \renewcommand{\arraystretch}{1.2}
     \begin{tabular}{l*{9}{c}}
@@ -67,9 +67,9 @@ It is also worth noting that the second margin takes much more samples to conver
         \cmidrule(l){2-10}
         & 0.5 & 1.0 & 1.5 & 2.0 & 2.5 & 3.0 & 3.5 & 4.0 & 4.5 \\
         \midrule
-        CS + Bonferroni & 0.774 & 0.744 & 0.720 & 0.662 & 0.582 & 0.000 & 0.000 & 0.000 & 0.000 \\
-        CS              & 0.780 & 0.746 & 0.726 & 0.670 & 0.614 & 0.538 & 0.538 & 0.538 & 0.538 \\
-        Comparison (\%) & 0.78\% & 0.27\% & 0.83\% & 1.21\% & 5.50\% & $\infty$ & $\infty$ & $\infty$ & $\infty$ \\
+        CP + Bonferroni & 0.774 & 0.744 & 0.720 & 0.662 & 0.582 & 0.000 & 0.000 & 0.000 & 0.000 \\
+        Dichotomy              & 0.780 & 0.746 & 0.726 & 0.670 & 0.614 & 0.538 & 0.538 & 0.538 & 0.538 \\
+        Gain (\%) & 0.78\% & 0.27\% & 0.83\% & 1.21\% & 5.50\% & $\infty$ & $\infty$ & $\infty$ & $\infty$ \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -82,7 +82,7 @@ Therefore, the differences between the two methods become more negligible as the
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/discrete_sigma}
-    \caption{Caption for the figure.}
+    \caption{Certified accuracies' comparison on the CIFAR-10 dataset in the discrete case for different standard deviations (displayed on the columns) with a sample size of $100$. The legend and row conventions are the same as in Figure~\ref{fig:discrete_num}.}
     \label{fig:discrete_sigma}
 \end{figure}
 
@@ -103,25 +103,25 @@ The effects of these hyperparameters are similar in both discrete and continuous
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/cont_num}
-    \caption{Caption for the figure.}
+    \caption{Certified accuracies' comparison on the CIFAR-10 dataset in the continuous case for different sample sizes (displayed on the columns) with $\sigma = 0.5$ and a temperature equal to $1$. CS/Bernstein + Bonferroni stands for the Bonferroni approach with either the empirical Bernstein interval (Proposition~\ref{prop:empirical-bernstein-inequality}) or the confidence sequence (Proposition~\ref{prop:confidence-sequence}), and CS/Bernstein stands for the new approach in section~\ref{sec:continuous}. The first row compares the certified accuracies using the first margin and the second row compares the certified accuracies using the second margin.}
     \label{fig:cont_num}
 \end{figure}
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/cont_sigma}
-    \caption{Caption for the figure.}
+    \caption{Certified accuracies' comparison on the CIFAR-10 dataset in the continuous case for different standard deviations (displayed on the columns) with a sample size of $100$ and a temperature equal to $0.1$. The legend and row conventions are the same as in Figure~\ref{fig:cont_num}.}
     \label{fig:cont_sigma}
 \end{figure}
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.8\textwidth]{images/cont_temp}
-    \caption{Caption for the figure.}
+    \caption{Certified accuracies' comparison on the CIFAR-10 dataset in the continuous case for different temperatures (displayed on the columns) with a sample size of $100$ and $\sigma = 0.5$. The legend and row conventions are the same as in Figure~\ref{fig:cont_num}.}
     \label{fig:cont_temp}
 \end{figure}
 
 \begin{table}[htbp]
     \centering
-    \caption{Certified accuracy on CIFAR-10 for different values of $r$ and number of samples.}
+    \caption{Certified accuracy using the first margin on CIFAR-10 in the continuous case for different values of radius $r$ and sample sizes with $\sigma = 0.5$ and a temperature of $1$.}
     \label{tab:certified-accuracy}
     \renewcommand{\arraystretch}{1.2}
     \begin{tabular}{@{}ll*{9}{c}@{}}
@@ -149,7 +149,7 @@ The effects of these hyperparameters are similar in both discrete and continuous
 \end{table}
 \begin{table}[htbp]
     \centering
-    \caption{Certified accuracy for different values of $r$ and number of samples.}
+    \caption{Certified accuracy using the second margin on CIFAR-10 in the continuous case for different values of radius $r$ and sample sizes with $\sigma = 0.5$ and a temperature of $1$.}
     \label{tab:certified-accuracy-2}
     \renewcommand{\arraystretch}{1.2}
     \begin{tabular}{@{}ll*{9}{c}@{}}

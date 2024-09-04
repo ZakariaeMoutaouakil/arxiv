@@ -20,6 +20,22 @@ We will call the case where we use the hardmax as a simplex map the \textbf{disc
 \subsection{Randomized Smoothing}\label{subsec:randomized-smoothing}
 Randomized smoothing is a technique designed to enhance the robustness of classifiers against small perturbations or adversarial attacks that stems from a simple intuition: if a classifier's decision is stable under small random perturbations of the input, it's likely to be more robust overall (this intuition will be made more rigorous using the concept of robustness radius).
 
+Figure~\ref{fig:pandas} provides a visual representation of how randomized smoothing works in practice.
+The left image shows an original input $x$ - in this case, a clear photograph of a panda.
+The right image demonstrates the effect of applying Gaussian noise with $\sigma = 0.5$ to the same input.
+This noisy version represents one of the many perturbations over which the smoothed classifier makes its prediction.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/pandas}
+    \caption{Caption for the figure.}
+    \label{fig:pandas}
+\end{figure}
+
+Importantly, the magnitude of this Gaussian noise is much larger than typical adversarial perturbations.
+This illustrates a key intuition behind randomized smoothing: by considering predictions over these large random perturbations, the classifier becomes robust to smaller, potentially adversarial changes in the input.
+In essence, the large random perturbations "drown out" the smaller adversarial ones.
+
+With this visual intuition in mind, let's formally define the smoothed classifier.
 Following the same conventions as in the previous section, we define the smoothed classifier $\hat{F}: \mathcal{X} \rightarrow \Delta^{d-1}$ using randomized smoothing as implementing a majority vote over predictions of the soft classifier $F$ with noisy versions of the input:
 
 \begin{align*}
@@ -40,6 +56,19 @@ This radius represents the maximum allowable perturbation $\epsilon$ that can be
 
 The certified radius serves as an indicator of a classifier's resilience to input disturbances.
 A larger value of $R(F,x)$ suggests greater robustness against perturbations for that particular input.
+
+Figure~\ref{fig:radius} illustrates this concept visually.
+The left panel shows a 2D projection of the decision boundaries of a smoothed classifier.
+The concentric dashed circles represent different perturbation radii around an input point $x$.
+The right panel shows the probabilities assigned to different classes (represented by colors) as the perturbation radius increases.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/radius}
+    \caption{Caption for the figure.}
+    \label{fig:radius}
+\end{figure}
+
+The certified radius $R(F,x)$ would correspond to the largest circle in the left panel where the original class (blue in this case) maintains the highest probability. In the right panel, this would be the point where the blue bar remains the tallest.
 
 In the context of randomized smoothing with Gaussian noise, the size of the perturbation is usually measured using the $\ell_2$-norm, therefore we can formally define the certified radius as:
 

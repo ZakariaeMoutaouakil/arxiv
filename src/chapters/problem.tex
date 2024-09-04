@@ -213,7 +213,7 @@ By incorporating this information, Bernstein's inequality can provide tighter bo
 However, the standard Bernstein inequality still requires knowledge of the true variance or at least a good upper bound, which is often unknown in practical situations.
 This limitation led to the development of the empirical Bernstein inequality.
 This data-dependent version estimates the variance from the sample itself, rather than relying on a priori bounds or assumptions.
-\begin{proposition}[Empirical Bernstein Inequality]
+\begin{proposition}[Empirical Bernstein Inequality]\label{prop:empirical-bernstein-inequality}
     Let $X_1, X_2, \ldots, X_n$ be independent random variables with values in $[a,b]$, and let $\bar{X}_n = \frac{1}{n}\sum_{i=1}^n X_i$ be their empirical mean.
     Define the empirical variance as
     \[

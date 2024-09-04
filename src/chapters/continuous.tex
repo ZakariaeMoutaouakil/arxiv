@@ -17,7 +17,7 @@ The authors frame this approach within the context of supermartingale theory, co
 They also provide a plethora of betting strategies that range from simple to implement but overly conservative strategies to tight but inefficient ones.
 
 For the intents of this report, we will use the simplest confidence sequence mentioned in their paper, namely, the following, as we leave the exploration of tighter confidence sequences for future work.
-\begin{proposition}
+\begin{proposition}\label{prop:confidence-sequence}
     Suppose $(X_t)_{t=1}^\infty \sim P$ for some $P \in \mathcal{P}$. For any $(0,1)$-valued predictable $(\lambda_t)_{t=1}^\infty$,
     \[
         C_t^{\text{PrPI-EB}} \coloneqq \left( \frac{\sum_{i=1}^t \lambda_i X_i}{\sum_{i=1}^t \lambda_i}\pm \sqrt{\frac{2\log(2/\alpha) + \sum_{i=1}^t v_i \psi_e (\lambda_i)}{\sum_{i=1}^t \lambda_i}} \right)
