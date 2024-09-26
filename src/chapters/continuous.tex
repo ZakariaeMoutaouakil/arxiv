@@ -18,7 +18,8 @@ They also provide a plethora of betting strategies that range from simple to imp
 
 For the intents of this report, we will use the simplest confidence sequence mentioned in their paper, namely, the following, as we leave the exploration of tighter confidence sequences for future work.
 
-\begin{proposition}[\cite{smith2022estimating}]\label{prop:confidence-sequence}
+\begin{proposition}[\cite{smith2022estimating}]
+    \label{prop:confidence-sequence}
     Suppose we have a possibly infinite sequence of independent and identically distributed random variables $(X_t)_{t=1}^\infty$.
     Then,
     \[
@@ -59,15 +60,98 @@ In a conservative fashion, we will estimate a lower confidence bound on $\Bar{Z}
 There are two approaches to obtain this lower bound.
 The first standard approach is to use Bonferroni correction (Algorithm~\ref{alg:bonferroni}) alongside an exact one-sided confidence interval (either empirical Bernstein's inequality in Proposition~\ref{prop:empirical-bernstein-inequality}, or the confidence sequence in Proposition~\ref{prop:confidence-sequence}).
 Our second approach is to estimate the lower confidence bound directly by first normalizing $Z$ to make sure its values are in the interval $[0,1]$, then we apply a one-sided confidence interval with level $\alpha$ where the coodinates of $Z$ serve as samples, then we invert the normalization, which gives us directly the lower confidence bound.
+The following lemma proves that the second approach is conservative and therefore legitimate.
+\begin{lemma}
+    \label{lemma:jensen-approximation}
+    Following the same notations as in section~\ref{subsec:first-radius-estimation}, we have:
+    \begin{equation}
+        M(\Hat{F},x) =\mathbb{E}[X^1] - \max_{j \neq 1}\mathbb{E}[X^j]\geq \mathbb{E}[X^1-\max_{j \neq 1}X^j] = \mathbb{E}[Z].
+    \end{equation}
+\end{lemma}
 
 \subsection{Second Radius Estimation}\label{subsec:second-radius-estimation-continuous}
-In the case of the second margin, our vector of interest in $Z\coloneqq\Phi^{-1}(X^1)-\max_{j \neq 1}\Phi^{-1}(X^j)$, where the function $\Phi^{-1}$ is applied element-wise on the coordinates of the vectors as before.
-A main issue that stops us from carrying out the same procedure as in the previous section is the unboundedness of $\Phi^{-1}$, which implies that we cannot apply either Bernstein's inequality or the plug-in Bernstein's confidence sequence, as they both assume a bounded random variable.
+In the case of the second margin, our quantity of interest is
+\[
+    M(\Phi^{-1}\circ\hat{F},x) = \Phi^{-1}\left(\mathbb{E}[X^1]\right)-\max_{j \neq 1}\Phi^{-1}\left(\mathbb{E}[X^j]\right).
+\]
+A main issue that stops us from carrying out the same procedure as in the previous section is that the Gaussian quantile function $\Phi^{-1}$ is concave when $x < 1/2$ and convex otherwise, Jensen's inequality hence cannot lead to a lower bound in the second margin.
+This is because typically $\mathbb{E}[X^1] > 1/2$ and $\mathbb{E}[X^j] < 1/2$ for $j \neq 1$.
+In this case, $\Phi^{-1}$ is convex for the first term and concave for the second term, preventing a straightforward application of Jensen's inequality to obtain a lower bound for the entire expression.
 
-To get around this unboundedness problem, the standard approach is the same Bonferroni approach in Algorithm~\ref{alg:bonferroni} which is to estimate confidence bounds on all the classes with level $\frac{\alpha}{m}$, and then plugging them in to obtain the lower confidence bound on $\Bar{Z}$.
-The reason why this approach is intuitive is that we know beforehand the output for each class is bounded in the interval $[0,1]$.
+The standard approach (Algorithm~\ref{alg:bonferroni}) of considering all classes in the confidence bound calculation is computationally expensive, especially for problems with many classes (which is the case in the ImageNet dataset).
+For $m$ classes, it requires computing $m$ confidence bounds, leading to $O(m)$ time complexity per prediction.
+This approach also necessitates a more stringent Bonferroni correction, dividing the significance level $\alpha$ by $m$, which becomes increasingly conservative as $k$ grows.
+In contrast, if we can reliably focus only on the second-highest class, we significantly reduce computational complexity down to a constant time, memory usage, and the severity of multiple comparisons correction, potentially leading to more efficient and powerful statistical estimation.
 
-Our approach, however, is more direct; we reuse our lemma~\ref{lemma:approximation}, as it produces a conservative lower bound on the margin such that the function $\Phi^{-1}$ is replaced by its taylor series approximation which is on the contrary bounded on $[0,1]$.
-If we define $Z_M\coloneqq\Phi^{-1}_M(X^1)-\max_{j \neq 1}\Phi^{-1}_M(X^j)$, then $Z_M$ is a bounded random variable.
-Thanks to the lemma, a lower confidence bound with level $\alpha$ on the vector $Z_M$ is also a lower confidence bound with level $\alpha$ on $Z$.
-Since our approximation is based on the supposition that $\Bar{X^1}\geq\frac{1}{2}$, we can split our procedure into two steps (exactly like in Algorithm~\ref{alg:second-margin-estimation}): first, we test our hypothesis at level $\frac{\alpha}{2}$, then we estimate the margin using the taylor series approximation at level $\frac{\alpha}{2}$ if the test succeeds, else we fall back on the standard method based on Bonferroni correction.
+If we employ an exact statistical test to verify that the second class cannot be surpassed by lower classes—specifically, testing whether the mean of the second class is greater than the means of all other classes (excluding the first class)—we can simplify our formula.
+In this case, we can replace the maximum operation with just the term corresponding to the second class:
+
+\begin{equation}
+    \label{eqn:jensen-approximation}
+    M(\Phi^{-1}\circ\hat{F},x) = \Phi^{-1}\left(\mathbb{E}[X^1]\right) - \Phi^{-1}\left(\mathbb{E}[X^2]\right).
+\end{equation}
+
+This simplification significantly enhances our use of the Bonferroni correction.
+We need to divide our significance level $\alpha$ by 4 in total.
+First, we use $\alpha/2$ for the exact test on the second class's superiority on all other classes except the first.
+If this test passes, we then estimate the margin at level $\alpha/2$, which requires dividing by 2 again to obtain an upper confidence bound on the second class and a lower confidence bound on the first class, each at level $\alpha/4$.
+This approach balances conservatism with statistical power, focusing on the most relevant classes while maintaining rigorous error control.
+
+In practice, to test if the mean of the second class is greater than the means of all other classes, we reuse lemma~\ref{lemma:jensen-approximation} and simply test if the mean of the difference between the output of the second class and the maximum of outputs of all other classes is greater than $0$, i.e
+\[
+    0 < \mathbb{E}[X^2 - \max_{j > 2} X^j] \leq \mathbb{E}[X^2] - \max_{j > 2} \mathbb{E}[X^j].
+\]
+
+Here, we suppose that the columns of the prediction matrix $X$ are ordered in decreasing order of their corresponding means for convenience.
+If the test passes at level $\alpha/2$, we estimate the margin at level $\alpha/2$ using the formula~\eqref{eqn:jensen-approximation} as explained before.
+
+If the initial test comparing the second class to all lower classes does not pass, we can proceed iteratively with the following procedure: we compare the second class to all other classes except the third at level $\alpha/2$
+\[
+    0 < \mathbb{E}[X^2 - \max_{j > 3} X^j] \leq \mathbb{E}[X^2] - \max_{j > 3} \mathbb{E}[X^j].
+\]
+If this new test passes, we then estimate the margin considering three classes: the first, second, and third.
+This requires a lower confidence bound on the first class and upper confidence bounds on both the second and third classes.
+To maintain our overall significance level, we divide $\alpha/2$ (our remaining significance budget after the test) by 3, resulting in a level of $\alpha/6$ for each of these three bounds.
+This approach allows us to adapt our statistical procedure based on the initial test results, maintaining a balance between precision and conservative error control.
+\[
+    M(\Phi^{-1}\circ\hat{F},x) = \Phi^{-1}\left(\mathbb{E}[X^1]\right) - \max\{\Phi^{-1}\left(\mathbb{E}[X^2]\right), \Phi^{-1}\left(\mathbb{E}[X^3]\right)\}
+\]
+
+If the second test still does not pass, we continue this procedure with the remaining classes, excluding one additional class at each step.
+This iterative process continues until it becomes less advantageous than the baseline approach that considers all classes.
+The decision point typically occurs when we've excluded approximately half of the classes.
+
+The rationale behind this approach becomes clear when we consider how we divide our significance level $\alpha$.
+In the initial case with just two classes, we divide $\alpha$ by 4.
+As we progress through the iterations, excluding more classes, we divide $\alpha$ by increasingly larger numbers: 6 for three classes, 8 for four classes, and so on.
+This progression continues until we reach the baseline case where we divide $\alpha$ by the total number of classes.
+
+The efficiency of our method diminishes as the divisor of $\alpha$ approaches the total number of classes.
+When we've excluded about half the classes, the computational cost and statistical power trade-off of our iterative method typically becomes less favorable compared to the simpler, all-class approach.
+This balance point provides a natural stopping criterion for our iterative procedure.
+
+The overall iterative procedure is summarized in~Algorithm~\ref{alg:iterative-bonferroni}.
+\begin{algorithm}[htbp]
+    \DontPrintSemicolon % Removes semicolons at the end of lines
+    \KwIn{A prediction matrix $X$ and a routine \texttt{getConfidenceBound()} that can compute a lower/upper confidence bound at a given confidence level $1-\alpha$}
+    \KwOut{The vector of counts $X = (X_1, \ldots, X_m)$}
+    Initialize $k = 1$\;
+    Define the column vector $Z = X^1 - \max_{j>k} X^j$\;
+    Compute a lower confidence bound $\underline{Z}$ on the mean of $Z$ using the \texttt{getConfidenceBound()} routine at level $\frac{\alpha}{2}$\;
+    \If{$\underline{Z} \geq 0$}{
+        Compute a lower confidence bound $\underline{X^1}$ on the mean of $X^1$ using the \texttt{getConfidenceBound()} routine at level $\frac{\alpha}{2k}$\;
+        \For{all other classes $j\leq k$ other than $1$}{
+            Compute an upper confidence bound $\overline{X^j}$ on the mean of $X^j$ using the \texttt{getConfidenceBound()} routine at level $\frac{\alpha}{2k}$\;
+        }
+        Plug in the lower and upper confidence bounds to the second margin $M(\Phi^{-1}\circ\hat{F},x)$\;
+        \KwRet{$M(\Phi^{-1}\circ\hat{F},x)$}
+    }
+    \Else{
+        \If{$k \geq \lfloor \frac{m}{2}\rfloor$}{
+            Fallback on Algorithm~\ref{alg:bonferroni}\;
+        }
+        Increment $k$ by 1\;
+        Go back to Step 2\;
+    }
+    \caption{The less pessimistic Bonferroni approach to estimate the second margin}\label{alg:iterative-bonferroni}
+\end{algorithm}
